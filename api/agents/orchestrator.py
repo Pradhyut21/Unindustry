@@ -19,12 +19,10 @@ from __future__ import annotations
 import asyncio
 import json
 import uuid
-from datetime import datetime, timezone
 from typing import Optional
 
 import structlog
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 from api.agents.base import BaseAgent
 from api.agents.doc_intel_agent import DocIntelAgent
@@ -41,9 +39,6 @@ from api.models.db import (
     ProductStatus,
     ReviewQueueItem,
     ReviewStatus,
-    SourceType,
-    UncertaintyReason,
-    VerificationStatus,
 )
 
 logger = structlog.get_logger(__name__)
@@ -64,9 +59,7 @@ class OrchestratorAgent(BaseAgent):
         """
         async with AsyncSessionLocal() as db:
             # Load product
-            result = await db.execute(
-                select(Product).where(Product.id == product_id)
-            )
+            result = await db.execute(select(Product).where(Product.id == product_id))
             product: Optional[Product] = result.scalar_one_or_none()
             if not product:
                 logger.error("Product not found", product_id=str(product_id))
@@ -102,9 +95,7 @@ class OrchestratorAgent(BaseAgent):
                 vision_agent.run(product_id=product_id, image_paths=image_paths)
             )
 
-            doc_candidates, vision_candidates = await asyncio.gather(
-                doc_task, vision_task
-            )
+            doc_candidates, vision_candidates = await asyncio.gather(doc_task, vision_task)
 
             # Merge all candidates per field
             merged: dict[str, list[CandidateValue]] = {}
@@ -115,15 +106,23 @@ class OrchestratorAgent(BaseAgent):
 
             # Determine missing fields for retrieval
             all_known_fields = {
-                fn: candidates[0].value
-                for fn, candidates in merged.items()
-                if candidates
+                fn: candidates[0].value for fn, candidates in merged.items() if candidates
             }
             target_fields = [
-                "voltage_rating", "current_rating", "power_rating", "frequency",
-                "ip_rating", "operating_temperature", "dimensions", "weight",
-                "material", "certifications", "model_number", "manufacturer",
-                "product_category", "description",
+                "voltage_rating",
+                "current_rating",
+                "power_rating",
+                "frequency",
+                "ip_rating",
+                "operating_temperature",
+                "dimensions",
+                "weight",
+                "material",
+                "certifications",
+                "model_number",
+                "manufacturer",
+                "product_category",
+                "description",
             ]
             missing_fields = [f for f in target_fields if f not in merged]
 

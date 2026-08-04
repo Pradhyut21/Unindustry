@@ -37,9 +37,7 @@ async def list_review_queue(
     result = await db.execute(
         select(ReviewQueueItem)
         .where(ReviewQueueItem.status == ReviewStatus.PENDING)
-        .options(
-            selectinload(ReviewQueueItem.field).selectinload(ProductField.sources)
-        )
+        .options(selectinload(ReviewQueueItem.field).selectinload(ProductField.sources))
         .order_by(ReviewQueueItem.id)
         .offset(skip)
         .limit(limit)
@@ -69,17 +67,13 @@ async def review_action(
     result = await db.execute(
         select(ReviewQueueItem)
         .where(ReviewQueueItem.id == item_id)
-        .options(
-            selectinload(ReviewQueueItem.field).selectinload(ProductField.sources)
-        )
+        .options(selectinload(ReviewQueueItem.field).selectinload(ProductField.sources))
     )
     item = result.scalar_one_or_none()
     if not item:
         raise HTTPException(status_code=404, detail="Review item not found")
     if item.status != ReviewStatus.PENDING:
-        raise HTTPException(
-            status_code=409, detail=f"Item already actioned: {item.status}"
-        )
+        raise HTTPException(status_code=409, detail=f"Item already actioned: {item.status}")
 
     item.status = body.action
     item.reviewer = body.reviewer

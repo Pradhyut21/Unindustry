@@ -139,7 +139,7 @@ export default function ReviewPage() {
                             <span className="text-zinc-400 font-mono">{src.source_ref}</span>
                             {src.extracted_snippet && (
                               <span className="text-zinc-600 ml-2 italic">
-                                "{src.extracted_snippet.slice(0, 100)}"
+                                {`"${src.extracted_snippet.slice(0, 100)}"`}
                               </span>
                             )}
                           </div>

@@ -70,7 +70,8 @@ class TestMapToSchema:
         # The ETIM schema maps voltage_rating to some output field
         # Check at least one field has a value
         values_with_data = [
-            v for k, v in result.items()
+            v
+            for k, v in result.items()
             if not k.startswith("_") and isinstance(v, dict) and v.get("value")
         ]
         assert len(values_with_data) >= 1

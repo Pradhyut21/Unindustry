@@ -58,6 +58,7 @@ Return ONLY valid JSON."""
 
 def _groq_client():
     from openai import AsyncOpenAI
+
     return AsyncOpenAI(
         api_key=settings.groq_api_key,
         base_url="https://api.groq.com/openai/v1",
@@ -103,8 +104,9 @@ class VisionAgent(BaseAgent):
             return {}
 
         await self.emit_event(
-            product_id, "agent_start",
-            f"Analyzing {len(image_paths)} image(s) with {settings.groq_vision_model}..."
+            product_id,
+            "agent_start",
+            f"Analyzing {len(image_paths)} image(s) with {settings.groq_vision_model}...",
         )
 
         field_candidates: dict[str, list[CandidateValue]] = {}
@@ -123,9 +125,7 @@ class VisionAgent(BaseAgent):
         )
         return field_candidates
 
-    async def _extract_from_image(
-        self, img_path: str
-    ) -> list[tuple[str, CandidateValue]]:
+    async def _extract_from_image(self, img_path: str) -> list[tuple[str, CandidateValue]]:
         """Call Groq vision model on one image (base64-encoded)."""
         try:
             with open(img_path, "rb") as f:
@@ -178,17 +178,19 @@ class VisionAgent(BaseAgent):
                     region_desc = f"image:{source_image}"
                     if region_notes:
                         region_desc += f" ({region_notes})"
-                    results.append((
-                        field_name,
-                        CandidateValue(
-                            value=str(value),
-                            source_type=SourceType.IMAGE,
-                            source_ref=source_image,
-                            extracted_snippet=region_desc,
-                            extraction_agent=f"vision_agent:groq:{settings.groq_vision_model}",
-                            low_quality=False,
-                        ),
-                    ))
+                    results.append(
+                        (
+                            field_name,
+                            CandidateValue(
+                                value=str(value),
+                                source_type=SourceType.IMAGE,
+                                source_ref=source_image,
+                                extracted_snippet=region_desc,
+                                extraction_agent=f"vision_agent:groq:{settings.groq_vision_model}",
+                                low_quality=False,
+                            ),
+                        )
+                    )
             return results
 
         except Exception as exc:

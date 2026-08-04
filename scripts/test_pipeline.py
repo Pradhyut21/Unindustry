@@ -3,34 +3,36 @@ End-to-end test of doc_intel_agent against the sample PDF.
 Run: python scripts/test_pipeline.py
 No DB needed — just tests the extraction + Groq LLM call.
 """
+
 import asyncio
 import sys
+import uuid
 from pathlib import Path
 
+# Must come before api imports — adds repo root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Load .env
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402
+
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-from api.agents.doc_intel_agent import DocIntelAgent
+from api.agents.doc_intel_agent import DocIntelAgent  # noqa: E402
 
 
-async def main():
+async def main() -> None:
     pdf_path = str(
         Path(__file__).parent.parent / "api" / "fixtures" / "sample_siemens_3rt2015_datasheet.pdf"
     )
     print(f"Testing doc extraction on: {pdf_path}\n")
 
     agent = DocIntelAgent()
-
-    import uuid
     product_id = uuid.uuid4()
 
     # Monkey-patch emit_event to print instead of push to SSE
-    async def print_event(pid, event_type, message, data=None):
+    async def print_event(pid, event_type, message, data=None):  # type: ignore[misc]
         print(f"  [{event_type}] {message}")
-    agent.emit_event = print_event
+
+    agent.emit_event = print_event  # type: ignore[method-assign]
 
     results = await agent.run(product_id, pdf_path=pdf_path)
 

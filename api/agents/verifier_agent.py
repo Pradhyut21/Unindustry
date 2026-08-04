@@ -215,9 +215,7 @@ def verify_field(
 
     best_group_key = max(value_groups, key=lambda k: group_score(value_groups[k]))
     agreeing = value_groups[best_group_key]
-    contradicting = [
-        c for k, v in value_groups.items() if k != best_group_key for c in v
-    ]
+    contradicting = [c for k, v in value_groups.items() if k != best_group_key for c in v]
 
     n_agreeing = len(agreeing)
     any_low_quality = any(c.low_quality for c in agreeing)
@@ -239,9 +237,7 @@ def verify_field(
         verification_status = VerificationStatus.SINGLE_SOURCE
 
     # Use the original (un-normalised) value from the best source in the group
-    best_candidate = max(
-        agreeing, key=lambda c: compute_source_type_weight(c.source_type)
-    )
+    best_candidate = max(agreeing, key=lambda c: compute_source_type_weight(c.source_type))
 
     return VerificationResult(
         field_name=field_name,
@@ -294,7 +290,9 @@ class VerifierAgent(BaseAgent):
             result = verify_field(field_name, candidates, min_sources)
             results[field_name] = result
 
-        verified = sum(1 for r in results.values() if r.verification_status == VerificationStatus.VERIFIED)
+        verified = sum(
+            1 for r in results.values() if r.verification_status == VerificationStatus.VERIFIED
+        )
         await self.emit_event(
             product_id,
             "agent_complete",

@@ -7,7 +7,7 @@ Set DATABASE_URL env var to a test database before running.
 """
 
 import pytest
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
 from api.main import app
 
@@ -15,9 +15,7 @@ from api.main import app
 @pytest.fixture
 async def client():
     """Async test client that talks to the real FastAPI app."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
 
@@ -50,7 +48,6 @@ class TestProductsAPI:
         assert response.status_code == 404
 
     async def test_create_product_with_name_only(self, client: AsyncClient):
-        import io
         response = await client.post(
             "/api/v1/products/",
             data={"name": "Siemens 3RT2 Contactor"},
@@ -69,6 +66,7 @@ class TestProductsAPI:
         assert response.status_code == 201
         data = response.json()
         import uuid
+
         uuid.UUID(data["id"])  # raises if not valid UUID
 
 

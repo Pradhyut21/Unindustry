@@ -34,8 +34,7 @@ from api.agents.verifier_agent import (
     verify_field,
 )
 from api.config import settings
-from api.models.db import SourceType, VerificationStatus
-
+from api.models.db import SourceType
 
 # ---------------------------------------------------------------------------
 # Labeled sample set
@@ -108,7 +107,7 @@ SAMPLE_PRODUCTS: list[SampleProduct] = [
         },
         candidates={
             "voltage_rating": [_c("230/400V AC", SourceType.DOC)],  # single source
-            "current_rating": [_c("16A", SourceType.DOC)],           # single source
+            "current_rating": [_c("16A", SourceType.DOC)],  # single source
             "ip_rating": [_c("IP20", SourceType.DOC), _c("IP20", SourceType.WEB)],
         },
     ),
@@ -121,8 +120,8 @@ SAMPLE_PRODUCTS: list[SampleProduct] = [
         },
         candidates={
             "voltage_rating": [
-                _c("400V", SourceType.DOC),   # correct
-                _c("230V", SourceType.WEB),   # wrong (1-phase confusion)
+                _c("400V", SourceType.DOC),  # correct
+                _c("230V", SourceType.WEB),  # wrong (1-phase confusion)
             ],
         },
     ),
@@ -210,7 +209,6 @@ SAMPLE_PRODUCTS: list[SampleProduct] = [
     # These are deliberately hard — the system is expected to get some wrong
     # or correctly refuse to commit. They validate that the calibration gap
     # is real: when confidence is low, the field IS wrong.
-
     # 9. Source contradiction — system picks wrong value (doc wins over image
     #    by weight, but the image was correct and doc was a typo in the sheet)
     #    Ground truth: 400V (3-phase motor). Doc says 230V (datasheet error).
@@ -219,14 +217,14 @@ SAMPLE_PRODUCTS: list[SampleProduct] = [
     SampleProduct(
         name="Atlas Copco GA11 Compressor Motor",
         description="ADVERSARIAL: doc has a typo (230V), nameplate shows correct 400V. "
-                    "Verifier picks doc by source weight — wrong answer, but flags contradiction.",
+        "Verifier picks doc by source weight — wrong answer, but flags contradiction.",
         ground_truth={
-            "voltage_rating": "400V",   # correct value
-            "power_rating": "11 kW",    # both sources agree — correct
+            "voltage_rating": "400V",  # correct value
+            "power_rating": "11 kW",  # both sources agree — correct
         },
         candidates={
             "voltage_rating": [
-                _c("230V", SourceType.DOC),    # datasheet typo — higher weight, wins
+                _c("230V", SourceType.DOC),  # datasheet typo — higher weight, wins
                 _c("400V", SourceType.IMAGE),  # correct nameplate — lower weight, loses
             ],
             "power_rating": [
@@ -242,7 +240,7 @@ SAMPLE_PRODUCTS: list[SampleProduct] = [
     SampleProduct(
         name="Parker Hannifin Solenoid Valve",
         description="ADVERSARIAL: material field has zero sources (irrecoverable). "
-                    "Voltage field is correct. Tests NO_SOURCE_FOUND path.",
+        "Voltage field is correct. Tests NO_SOURCE_FOUND path.",
         ground_truth={
             "voltage_rating": "24V DC",
             "material": "Epoxy-coated aluminium",  # no source → will be None → wrong
@@ -264,9 +262,9 @@ SAMPLE_PRODUCTS: list[SampleProduct] = [
     SampleProduct(
         name="Eaton PKZM0 Motor Protector (worn label)",
         description="ADVERSARIAL: blurry nameplate. Vision reads '3A' but truth is '30A'. "
-                    "Single low-quality image source — should route to HITL, still wrong.",
+        "Single low-quality image source — should route to HITL, still wrong.",
         ground_truth={
-            "current_rating": "30A",   # correct
+            "current_rating": "30A",  # correct
             "model_number": "PKZM0-32",  # different field, image got this right
         },
         candidates={
@@ -284,7 +282,7 @@ SAMPLE_PRODUCTS: list[SampleProduct] = [
     SampleProduct(
         name="Schneider TeSys D LC1D Contactor (discontinued)",
         description="ADVERSARIAL: web-only source for a discontinued product. "
-                    "Returns outdated certifications — single low-reliability source.",
+        "Returns outdated certifications — single low-reliability source.",
         ground_truth={
             "certifications": "CE, IEC 60947-4-1, EN 60947-4-1, RoHS",
             "voltage_rating": "220V AC",  # web got this right
@@ -301,7 +299,6 @@ SAMPLE_PRODUCTS: list[SampleProduct] = [
         },
     ),
 ]
-
 
 
 # ---------------------------------------------------------------------------
@@ -334,9 +331,7 @@ class EvalSummary:
     confidences_when_incorrect: list[float] = field(default_factory=list)
 
 
-def evaluate_sample(
-    sample: SampleProduct, confidence_threshold: float = 0.7
-) -> list[FieldResult]:
+def evaluate_sample(sample: SampleProduct, confidence_threshold: float = 0.7) -> list[FieldResult]:
     results: list[FieldResult] = []
     for field_name, gt_value in sample.ground_truth.items():
         candidates = sample.candidates.get(field_name, [])
@@ -349,9 +344,10 @@ def evaluate_sample(
         ) or (vr.final_value is None and gt_value is None)
 
         routed_to_hitl = vr.confidence < confidence_threshold
-        hitl_needed = vr.verification_status.value in (
-            "single_source", "contradiction"
-        ) or vr.confidence < confidence_threshold
+        hitl_needed = (
+            vr.verification_status.value in ("single_source", "contradiction")
+            or vr.confidence < confidence_threshold
+        )
 
         results.append(
             FieldResult(
@@ -400,33 +396,47 @@ def print_report(summary: EvalSummary, all_results: list[FieldResult]) -> None:
     print("\n" + "=" * 70)
     print("  ProductTruth — Evaluation Report")
     print("=" * 70)
-    print(f"\n  Sample: {len(SAMPLE_PRODUCTS)} synthetic products, {summary.total_fields} labeled fields")
-    print(f"  NOTE: Synthetic data — not real manufacturer catalog data\n")
+    print(
+        f"\n  Sample: {len(SAMPLE_PRODUCTS)} synthetic products, {summary.total_fields} labeled fields"
+    )
+    print("  NOTE: Synthetic data — not real manufacturer catalog data\n")
 
     accuracy = summary.correct_predictions / summary.total_fields * 100
-    print(f"  Field-level accuracy:              {accuracy:.1f}%  ({summary.correct_predictions}/{summary.total_fields})")
+    print(
+        f"  Field-level accuracy:              {accuracy:.1f}%  ({summary.correct_predictions}/{summary.total_fields})"
+    )
 
     hitl_precision = (
         summary.correct_hitl_routing / summary.fields_routed_to_hitl * 100
-        if summary.fields_routed_to_hitl > 0 else 0
+        if summary.fields_routed_to_hitl > 0
+        else 0
     )
     hitl_recall = (
         summary.correct_hitl_routing / summary.fields_needing_hitl * 100
-        if summary.fields_needing_hitl > 0 else 0
+        if summary.fields_needing_hitl > 0
+        else 0
     )
-    print(f"  Fields correctly routed to HITL:   {hitl_precision:.1f}% precision, {hitl_recall:.1f}% recall")
-    print(f"  Fields routed to HITL:             {summary.fields_routed_to_hitl}/{summary.total_fields}")
-    print(f"  Fields needing HITL:               {summary.fields_needing_hitl}/{summary.total_fields}")
+    print(
+        f"  Fields correctly routed to HITL:   {hitl_precision:.1f}% precision, {hitl_recall:.1f}% recall"
+    )
+    print(
+        f"  Fields routed to HITL:             {summary.fields_routed_to_hitl}/{summary.total_fields}"
+    )
+    print(
+        f"  Fields needing HITL:               {summary.fields_needing_hitl}/{summary.total_fields}"
+    )
 
     avg_conf_correct = (
         sum(summary.confidences_when_correct) / len(summary.confidences_when_correct)
-        if summary.confidences_when_correct else 0.0
+        if summary.confidences_when_correct
+        else 0.0
     )
     avg_conf_incorrect = (
         sum(summary.confidences_when_incorrect) / len(summary.confidences_when_incorrect)
-        if summary.confidences_when_incorrect else 0.0
+        if summary.confidences_when_incorrect
+        else 0.0
     )
-    print(f"\n  Confidence calibration:")
+    print("\n  Confidence calibration:")
     print(f"    Avg confidence (correct fields):   {avg_conf_correct:.3f}")
     print(f"    Avg confidence (incorrect fields): {avg_conf_incorrect:.3f}")
     calibration_gap = avg_conf_correct - avg_conf_incorrect

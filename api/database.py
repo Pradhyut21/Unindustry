@@ -44,7 +44,5 @@ async def init_db() -> None:
     """
     async with engine.begin() as conn:
         # Enable pgvector extension first
-        await conn.execute(
-            __import__("sqlalchemy").text("CREATE EXTENSION IF NOT EXISTS vector")
-        )
+        await conn.execute(__import__("sqlalchemy").text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(Base.metadata.create_all)

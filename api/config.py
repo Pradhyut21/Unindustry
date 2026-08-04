@@ -12,9 +12,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # Database
-    database_url: str = (
-        "postgresql+asyncpg://producttruth:producttruth@localhost:5432/producttruth"
-    )
+    database_url: str = "postgresql+asyncpg://producttruth:producttruth@localhost:5432/producttruth"
 
     # Groq API (OpenAI-compatible)
     groq_api_key: str = ""
@@ -27,7 +25,7 @@ class Settings(BaseSettings):
 
     # Pipeline behaviour
     confidence_threshold: float = 0.7  # fields below this go to HITL queue
-    min_sources_for_verified: int = 2   # how many independent sources must agree
+    min_sources_for_verified: int = 2  # how many independent sources must agree
 
     # App
     environment: str = "development"

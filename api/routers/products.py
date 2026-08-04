@@ -15,7 +15,7 @@ from sqlalchemy.orm import selectinload
 
 from api.database import get_db
 from api.models.db import Product, ProductStatus
-from api.models.schemas import ProductCreate, ProductOut, ProductSummaryOut
+from api.models.schemas import ProductOut, ProductSummaryOut
 
 router = APIRouter()
 
@@ -69,6 +69,7 @@ async def create_product(
     Accepts multipart/form-data so PDF and images can be uploaded alongside metadata.
     """
     import os
+
     import aiofiles
 
     os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -122,9 +123,10 @@ async def trigger_pipeline(
         raise HTTPException(status_code=404, detail="Product not found")
 
     # Import here to avoid circular import at module load
+    import asyncio
+
     from api.agents.orchestrator import OrchestratorAgent
 
-    import asyncio
     asyncio.create_task(OrchestratorAgent().run(product_id=product_id))
 
     return {"message": "Pipeline started", "product_id": str(product_id)}

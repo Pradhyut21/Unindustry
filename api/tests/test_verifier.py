@@ -12,7 +12,6 @@ import pytest
 
 from api.agents.verifier_agent import (
     CandidateValue,
-    VerificationResult,
     compute_agreement_multiplier,
     compute_confidence,
     compute_source_type_weight,
@@ -156,9 +155,7 @@ class TestUncertaintyReason:
         assert reason == UncertaintyReason.NO_SOURCE_FOUND
 
     def test_single_source_returns_single_source(self):
-        reason = determine_uncertainty_reason(
-            [doc_candidate("230V")], 1, False, False
-        )
+        reason = determine_uncertainty_reason([doc_candidate("230V")], 1, False, False)
         assert reason == UncertaintyReason.SINGLE_SOURCE
 
     def test_contradiction_returns_source_contradiction(self):
@@ -305,8 +302,8 @@ class TestVerifyField:
     def test_doc_source_preferred_over_web_for_final_value(self):
         """When 3 sources agree, the final value should come from the highest-weight source."""
         candidates = [
-            web_candidate("230 Volts"),     # lower weight
-            doc_candidate("230V"),           # higher weight — this wins
+            web_candidate("230 Volts"),  # lower weight
+            doc_candidate("230V"),  # higher weight — this wins
             image_candidate("230V"),
         ]
         result = verify_field("voltage_rating", candidates, min_sources=2)

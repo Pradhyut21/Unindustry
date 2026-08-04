@@ -56,7 +56,9 @@ class RetrievalAgent(BaseAgent):
         dict mapping field_name → list[CandidateValue]
         """
         if not missing_fields:
-            await self.emit_event(product_id, "agent_complete", "No missing fields — skipping retrieval.")
+            await self.emit_event(
+                product_id, "agent_complete", "No missing fields — skipping retrieval."
+            )
             return {}
 
         await self.emit_event(
@@ -75,9 +77,7 @@ class RetrievalAgent(BaseAgent):
         # 2. LLM-assisted retrieval for fields still missing
         still_missing = [f for f in missing_fields if f not in field_candidates]
         if still_missing and settings.groq_api_key:
-            llm_results = await self._llm_retrieval(
-                product_name, still_missing, known_fields or {}
-            )
+            llm_results = await self._llm_retrieval(product_name, still_missing, known_fields or {})
             for field_name, candidate in llm_results:
                 field_candidates.setdefault(field_name, []).append(candidate)
 
@@ -128,7 +128,7 @@ class RetrievalAgent(BaseAgent):
                     if alias in content_lower:
                         # Extract surrounding context
                         idx = content_lower.find(alias)
-                        snippet = content[max(0, idx - 20): idx + 100].strip()
+                        snippet = content[max(0, idx - 20) : idx + 100].strip()
                         value = _extract_value_from_snippet(snippet, alias)
                         if value:
                             results.append(
@@ -199,17 +199,19 @@ Return format:
                 if value and isinstance(value, str):
                     low_quality = value.startswith("~")
                     clean_value = value.lstrip("~").strip()
-                    results.append((
-                        field_name,
-                        CandidateValue(
-                            value=clean_value,
-                            source_type=SourceType.WEB,
-                            source_ref="llm:inferred",
-                            extracted_snippet=f"LLM inferred from product name: {product_name}",
-                            extraction_agent="retrieval_agent:groq",
-                            low_quality=low_quality,
-                        ),
-                    ))
+                    results.append(
+                        (
+                            field_name,
+                            CandidateValue(
+                                value=clean_value,
+                                source_type=SourceType.WEB,
+                                source_ref="llm:inferred",
+                                extracted_snippet=f"LLM inferred from product name: {product_name}",
+                                extraction_agent="retrieval_agent:groq",
+                                low_quality=low_quality,
+                            ),
+                        )
+                    )
             return results
 
         except Exception as exc:
@@ -223,7 +225,7 @@ def _extract_value_from_snippet(snippet: str, key: str) -> Optional[str]:
     idx = lower.find(key)
     if idx == -1:
         return None
-    after = snippet[idx + len(key):].strip()
+    after = snippet[idx + len(key) :].strip()
     # Remove leading punctuation
     after = after.lstrip(":- \t")
     # Take up to first newline or 80 chars

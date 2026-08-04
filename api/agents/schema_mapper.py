@@ -132,9 +132,7 @@ class SchemaMappingAgent(BaseAgent):
         -------
         dict — commerce-ready product record in target schema
         """
-        await self.emit_event(
-            product_id, "agent_start", "Mapping fields to ETIM schema..."
-        )
+        await self.emit_event(product_id, "agent_start", "Mapping fields to ETIM schema...")
 
         schema = load_schema()
         if not schema:

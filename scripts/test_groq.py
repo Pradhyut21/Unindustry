@@ -1,4 +1,5 @@
 """Quick Groq connectivity test — run: python scripts/test_groq.py"""
+
 import asyncio
 import os
 import sys
@@ -40,10 +41,17 @@ async def main():
     try:
         r2 = await client.chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
-            messages=[{
-                "role": "user",
-                "content": [{"type": "text", "text": 'What colour is the sky? Return JSON: {"answer": "..."}'}],
-            }],
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": 'What colour is the sky? Return JSON: {"answer": "..."}',
+                        }
+                    ],
+                }
+            ],
             max_tokens=50,
             temperature=0,
         )

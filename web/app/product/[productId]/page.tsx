@@ -131,7 +131,7 @@ function FieldCard({ field }: { field: ProductField }) {
                         <div>
                           <div className="text-xs font-mono text-zinc-400 mb-0.5">{src.source_ref}</div>
                           {src.extracted_snippet && (
-                            <div className="text-xs text-zinc-600 italic">"{src.extracted_snippet}"</div>
+                            <div className="text-xs text-zinc-600 italic">{`"${src.extracted_snippet}"`}</div>
                           )}
                           <div className="text-xs text-zinc-700 mt-0.5">via {src.extraction_agent}</div>
                         </div>
@@ -145,7 +145,7 @@ function FieldCard({ field }: { field: ProductField }) {
               {isContradiction && field.contradicting_value && (
                 <div>
                   <div className="text-xs font-mono text-red-500/70 uppercase tracking-wider mb-2">
-                    Conflicting — "{field.contradicting_value}"
+                    {`Conflicting — "${field.contradicting_value}"`}
                   </div>
                   <div className="space-y-2">
                     {conflictingSources.map((src) => (
@@ -154,7 +154,7 @@ function FieldCard({ field }: { field: ProductField }) {
                         <div>
                           <div className="text-xs font-mono text-red-400/80 mb-0.5">{src.source_ref}</div>
                           {src.extracted_snippet && (
-                            <div className="text-xs text-red-600/60 italic">"{src.extracted_snippet}"</div>
+                            <div className="text-xs text-red-600/60 italic">{`"${src.extracted_snippet}"`}</div>
                           )}
                           <div className="text-xs text-zinc-700 mt-0.5">via {src.extraction_agent}</div>
                         </div>

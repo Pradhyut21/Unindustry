@@ -63,6 +63,7 @@ def _parse_value_from_line(line: str, pattern: str) -> Optional[str]:
 def _groq_client():
     """Return an AsyncOpenAI client pointed at the Groq endpoint."""
     from openai import AsyncOpenAI
+
     return AsyncOpenAI(
         api_key=settings.groq_api_key,
         base_url="https://api.groq.com/openai/v1",
@@ -141,16 +142,18 @@ class DocIntelAgent(BaseAgent):
                         if pattern in line_lower:
                             value = _parse_value_from_line(line, pattern)
                             if value:
-                                results.append((
-                                    field_name,
-                                    CandidateValue(
-                                        value=value,
-                                        source_type=SourceType.DOC,
-                                        source_ref=f"{source_file}:page{page_num}",
-                                        extracted_snippet=line.strip()[:200],
-                                        extraction_agent="doc_intel_agent:heuristic",
-                                    ),
-                                ))
+                                results.append(
+                                    (
+                                        field_name,
+                                        CandidateValue(
+                                            value=value,
+                                            source_type=SourceType.DOC,
+                                            source_ref=f"{source_file}:page{page_num}",
+                                            extracted_snippet=line.strip()[:200],
+                                            extraction_agent="doc_intel_agent:heuristic",
+                                        ),
+                                    )
+                                )
                             break
 
         doc.close()
@@ -161,9 +164,7 @@ class DocIntelAgent(BaseAgent):
         results.extend(llm_results)
         return results
 
-    async def _llm_extract(
-        self, text: str, source_file: str
-    ) -> list[tuple[str, CandidateValue]]:
+    async def _llm_extract(self, text: str, source_file: str) -> list[tuple[str, CandidateValue]]:
         """
         Use Groq (llama-3.3-70b) to extract structured fields from document text.
         More reliable than heuristic parsing for complex layouts.
@@ -201,16 +202,18 @@ Return ONLY valid JSON, no explanation."""
             results: list[tuple[str, CandidateValue]] = []
             for field_name, value in extracted.items():
                 if value and isinstance(value, str):
-                    results.append((
-                        field_name,
-                        CandidateValue(
-                            value=value,
-                            source_type=SourceType.DOC,
-                            source_ref=f"{source_file}:llm_extract",
-                            extracted_snippet="LLM extracted from full document text",
-                            extraction_agent="doc_intel_agent:groq",
-                        ),
-                    ))
+                    results.append(
+                        (
+                            field_name,
+                            CandidateValue(
+                                value=value,
+                                source_type=SourceType.DOC,
+                                source_ref=f"{source_file}:llm_extract",
+                                extracted_snippet="LLM extracted from full document text",
+                                extraction_agent="doc_intel_agent:groq",
+                            ),
+                        )
+                    )
             return results
 
         except Exception as exc:

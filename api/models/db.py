@@ -45,7 +45,7 @@ class ProductStatus(str, enum.Enum):
 
 
 class VerificationStatus(str, enum.Enum):
-    VERIFIED = "verified"          # ≥2 independent sources agree
+    VERIFIED = "verified"  # ≥2 independent sources agree
     SINGLE_SOURCE = "single_source"
     CONTRADICTION = "contradiction"
     PENDING = "pending"
@@ -59,19 +59,20 @@ class UncertaintyReason(str, enum.Enum):
     Why a field has low confidence — visible in output, not just a raw number.
     This is the hallucination-taxonomy-style classification the verifier assigns.
     """
-    NONE = "none"                          # fully verified
-    SINGLE_SOURCE = "single_source"        # only one source found
+
+    NONE = "none"  # fully verified
+    SINGLE_SOURCE = "single_source"  # only one source found
     SOURCE_CONTRADICTION = "source_contradiction"  # sources disagree
     LOW_QUALITY_EXTRACTION = "low_quality_extraction"  # noisy extract (OCR, etc.)
-    NO_SOURCE_FOUND = "no_source_found"    # couldn't find any source
+    NO_SOURCE_FOUND = "no_source_found"  # couldn't find any source
 
 
 class SourceType(str, enum.Enum):
-    DOC = "doc"        # parsed from PDF / datasheet
-    IMAGE = "image"    # extracted via VLM from product photo
-    WEB = "web"        # retrieved via RAG / web search
-    KG = "kg"          # from internal knowledge graph (past verified products)
-    HUMAN = "human"    # HITL correction
+    DOC = "doc"  # parsed from PDF / datasheet
+    IMAGE = "image"  # extracted via VLM from product photo
+    WEB = "web"  # retrieved via RAG / web search
+    KG = "kg"  # from internal knowledge graph (past verified products)
+    HUMAN = "human"  # HITL correction
 
 
 class ReviewStatus(str, enum.Enum):
@@ -89,9 +90,7 @@ class ReviewStatus(str, enum.Enum):
 class Product(Base):
     __tablename__ = "products"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(512), nullable=False)
     category: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
     status: Mapped[ProductStatus] = mapped_column(
@@ -100,9 +99,7 @@ class Product(Base):
     input_pdf_path: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     input_image_paths: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON list
     input_url: Mapped[Optional[str]] = mapped_column(String(2048), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
@@ -115,9 +112,7 @@ class Product(Base):
 class ProductField(Base):
     __tablename__ = "product_fields"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     product_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("products.id", ondelete="CASCADE"), nullable=False
     )
@@ -136,9 +131,7 @@ class ProductField(Base):
     schema_field_id: Mapped[Optional[str]] = mapped_column(
         String(256), nullable=True
     )  # maps to ETIM field ID e.g. "EF000001"
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
@@ -155,9 +148,7 @@ class ProductField(Base):
 class FieldSource(Base):
     __tablename__ = "field_sources"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     field_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("product_fields.id", ondelete="CASCADE"), nullable=False
     )
@@ -177,9 +168,7 @@ class FieldSource(Base):
 class ReviewQueueItem(Base):
     __tablename__ = "review_queue"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     field_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("product_fields.id", ondelete="CASCADE"),
@@ -190,9 +179,7 @@ class ReviewQueueItem(Base):
         Enum(ReviewStatus), default=ReviewStatus.PENDING, nullable=False
     )
     reviewer: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
-    reviewed_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     human_corrected_value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     field: Mapped[ProductField] = relationship("ProductField", back_populates="review")

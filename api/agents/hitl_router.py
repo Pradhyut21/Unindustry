@@ -36,5 +36,5 @@ class HITLRouter(BaseAgent):
                 product_id,
                 "agent_complete",
                 f"{hitl_count} field(s) routed to human review queue.",
-                data={"hitl_count": hitl_count, "review_url": f"/review"},
+                data={"hitl_count": hitl_count, "review_url": "/review"},
             )

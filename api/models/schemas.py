@@ -19,7 +19,6 @@ from api.models.db import (
     VerificationStatus,
 )
 
-
 # ---------------------------------------------------------------------------
 # Field Sources
 # ---------------------------------------------------------------------------
@@ -81,6 +80,7 @@ class ProductOut(BaseModel):
 
 class ProductSummaryOut(BaseModel):
     """Lightweight product list item — no fields."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -127,6 +127,7 @@ class AgentEvent(BaseModel):
     Emitted over SSE as each agent completes or updates.
     Frontend uses this to animate agent cards.
     """
+
     event_type: str  # "agent_start" | "agent_complete" | "agent_error" | "pipeline_complete"
     agent_name: str
     message: str
