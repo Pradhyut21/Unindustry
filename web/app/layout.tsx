@@ -48,7 +48,7 @@ export default function RootLayout({
                 Review Queue
               </Link>
               <a
-                href="https://github.com/PLACEHOLDER/producttruth"
+                href="https://github.com/Pradhyut21/Unindustry"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-zinc-400 hover:text-zinc-100 transition-colors"

@@ -2,13 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main, master, dev]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
 jobs:
-  lint-and-test:
+  # ─── Backend: lint + type-check + test + eval ─────────────────────────────
+  backend:
+    name: "Backend (Python ${{ matrix.python-version }})"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
     services:
       postgres:
         image: pgvector/pgvector:pg16
@@ -19,17 +25,17 @@ jobs:
         ports: ["5432:5432"]
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
+          --health-interval 5s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
           cache-dependency-path: api/requirements*.txt
 
@@ -37,25 +43,41 @@ jobs:
         run: pip install -r api/requirements.txt -r api/requirements-dev.txt
 
       - name: Lint (ruff)
-        run: ruff check api/
+        run: ruff check api/ scripts/
 
       - name: Format check (black)
-        run: black --check api/
+        run: black --check api/ scripts/
 
-      - name: Run tests
+      - name: Run full test suite with coverage
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/producttruth_test
           GROQ_API_KEY: "gsk_test_key_not_real"
           CONFIDENCE_THRESHOLD: "0.7"
-        run: pytest api/tests/ --cov=api --cov-report=term-missing -v
+        run: |
+          pytest api/tests/ \
+            --cov=api \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --tb=short \
+            -v
 
-      - name: Run eval script (no DB needed)
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.11'
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+      - name: Run eval (no DB or API key needed)
         run: python scripts/eval.py
 
-      - name: Build docker image
+      - name: Build Docker image
+        if: matrix.python-version == '3.11'
         run: docker build -t producttruth-api:ci -f Dockerfile .
 
+  # ─── Frontend: lint + type-check + build ──────────────────────────────────
   frontend:
+    name: "Frontend (Node 20)"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,12 +92,16 @@ jobs:
         run: npm ci
         working-directory: web
 
-      - name: Lint
+      - name: Type check (tsc)
+        run: npx tsc --noEmit
+        working-directory: web
+
+      - name: Lint (eslint)
         run: npm run lint
         working-directory: web
 
-      - name: Build
+      - name: Build (Next.js)
         run: npm run build
         working-directory: web
         env:
-          NEXT_PUBLIC_API_URL: "https://api.producttruth.example.com"
+          NEXT_PUBLIC_API_URL: "http://localhost:8000"

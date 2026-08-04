@@ -1,17 +1,35 @@
 # ProductTruth
 
-**[github.com/Pradhyut21/Unindustry](https://github.com/Pradhyut21/Unindustry)**
+> _(Repo: [Pradhyut21/Unindustry](https://github.com/Pradhyut21/Unindustry) — team name at UNIHACK. Project: **ProductTruth**.)_
 
-![CI](https://github.com/Pradhyut21/Unindustry/actions/workflows/ci.yml/badge.svg)
+![CI Backend](https://github.com/Pradhyut21/Unindustry/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Python](https://img.shields.io/badge/python-3.11-blue)
+![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 ![Tests](https://img.shields.io/badge/tests-37%20passing-brightgreen)
 ![Eval](https://img.shields.io/badge/field%20accuracy-85.2%25-yellow)
+![Calibration](https://img.shields.io/badge/calibration%20gap-%2B0.450-orange)
 
-> Turns limited product inputs into commerce-ready records where every field
-> is confidence-scored and traceable to its source — instead of silently hallucinated.
+> Confidence-scored, citation-traced product intelligence for industrial commerce —
+> every field is traceable to its exact source instead of silently hallucinated.
 
-<!-- INSERT 15–30 sec demo GIF here after recording -->
+<!-- INSERT DEMO GIF: record 15-30s: input → agents animate → contradiction card → citation drawer -->
+<!-- This is the single highest-leverage missing asset. Use LICEcap/ShareX on Windows. -->
+
+---
+
+## Quick Facts
+
+| | |
+|---|---|
+| **Lines of code** | ~3,900 (2,400 Python src · 410 tests · 1,040 TypeScript) |
+| **Agents** | 7 (Orchestrator, Doc-Intel, Vision, Retrieval, Verifier, Schema Mapper, HITL Router) |
+| **Tests** | 37 passing — verifier scoring, schema mapping, API health |
+| **Eval** | 85.2% accuracy on 27 labeled fields incl. 4 adversarial cases; +0.450 calibration gap |
+| **LLM** | Groq `llama-3.3-70b-versatile` (extraction) · `llama-4-scout` (vision, where available) |
+| **Stack** | FastAPI · Next.js 14 · pgvector · SSE streaming · Docker |
+| **Key differentiator** | `SOURCE_CONTRADICTION` detection — wrong answer is flagged and shown both values, not silently picked |
+
+---
 
 ## The Problem
 
@@ -26,6 +44,8 @@ Given any combination of inputs (product name, spec PDF, product photos), a mult
 
 Fields below the confidence threshold (default 0.7) are routed to a **human review queue** with side-by-side evidence, instead of going live wrong.
 
+The headline feature: when two sources contradict each other (e.g., datasheet says 230V, nameplate says 400V), the system surfaces **both values** to a human reviewer rather than silently picking one. Most "AI enrichment" tools don't do this.
+
 ## Architecture
 
 ```
@@ -33,61 +53,66 @@ INPUT (product name + PDF + photos)
          │
          ▼
 ┌─────────────────────┐
-│   Orchestrator Agent │  Plans extraction based on available inputs
+│   Orchestrator Agent │  Plans extraction, merges candidates
 └────────┬────────────┘
          │
          ▼
 ┌────────────────────────────────────────────┐
 │              EXTRACTION LAYER               │
-│  Doc-Intel Agent   Vision Agent (VLM)       │
-│  (PDF/datasheet)   (photos → attributes)    │
-│        │                  │                 │
-│        └────────┬──────────┘                │
-│                 ▼                           │
-│         Retrieval Agent (RAG)               │
-│   pgvector over manufacturer catalogs       │
-└─────────────────┬──────────────────────────┘
-                  ▼
+│  Doc-Intel Agent     Vision Agent (VLM)     │
+│  (PDF + LLM parse)   (photos → attributes)  │
+│        │                    │               │
+│        └──────────┬──────────┘              │
+│                   ▼                         │
+│          Retrieval Agent (RAG)              │
+│    pgvector over manufacturer catalogs      │
+└──────────────────┬─────────────────────────┘
+                   ▼
 ┌─────────────────────────────────────────────┐
-│            VERIFICATION LAYER                │
-│  Verifier Agent: ≥2 sources must agree       │
-│  confidence score + uncertainty_reason       │
+│             VERIFICATION LAYER               │
+│  Verifier Agent: ≥2 independent sources     │
+│  must agree for VERIFIED status              │
+│  confidence = source_weight × agreement     │
+│  uncertainty_reason set on every field      │
 └─────────────────┬───────────────────────────┘
                   ▼
 ┌─────────────────────────────────────────────┐
-│   Schema Mapper (ETIM-inspired taxonomy)     │
+│   Schema Mapper — ETIM field IDs + units    │
 └─────────────────┬───────────────────────────┘
                   ▼
 ┌─────────────────────────────────────────────┐
 │      HITL Review Queue (confidence < 0.7)    │
-│  Human accepts / edits / rejects per field   │
+│  Shows both values on CONTRADICTION fields   │
+│  Human accept / edit / reject per field      │
+│  Corrections written back as human sources  │
 └─────────────────┬───────────────────────────┘
                   ▼
          Commerce-ready product JSON
-         + full audit trail per field
+         + per-field audit trail
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full agent breakdown.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full agent table, confidence rubric, and data model.
 
 ## Quickstart (Local)
 
 ```bash
 git clone https://github.com/Pradhyut21/Unindustry
 cd Unindustry
-cp .env.example .env          # add your GROQ_API_KEY (free at console.groq.com)
+cp .env.example .env
+# Edit .env: add GROQ_API_KEY (free at https://console.groq.com/)
 docker compose up
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — upload `api/fixtures/sample_siemens_3rt2015_datasheet.pdf` to run a live pipeline pass.
+Open [http://localhost:3000](http://localhost:3000) — upload `api/fixtures/sample_siemens_3rt2015_datasheet.pdf` to run a real pipeline pass against the included Siemens 3RT2015 contactor datasheet. No account needed for the local run beyond the Groq key.
 
 ## Live Demo
 
-> Deploy in progress — link will be updated here before submission.
-> To run locally: follow the Quickstart above. A sample PDF is included at `api/fixtures/sample_siemens_3rt2015_datasheet.pdf`.
+> ⚡ Deploy in progress — link will be added here before submission.
+> Run locally in under 5 minutes with the Quickstart above.
 
 ## Results
 
-Evaluated against a synthetic-but-realistic sample of hand-labeled industrial products (see [`scripts/eval.py`](scripts/eval.py) and [`docs/EVALUATION.md`](docs/EVALUATION.md)). **Not real manufacturer data** — synthetic fixtures written and labeled by the team, including deliberately adversarial cases designed to fail. Numbers are reproducible:
+Evaluated on a synthetic-but-realistic sample of hand-labeled industrial products. **Not real manufacturer data** — synthetic fixtures written and labeled by the team, explicitly stated so the numbers are honest. Reproducible:
 
 ```bash
 python scripts/eval.py
@@ -95,37 +120,55 @@ python scripts/eval.py
 
 | Metric | Value |
 |--------|-------|
-| Field-level accuracy | **85.2%** (23/27 fields) |
-| HITL routing precision | **100%** — every wrong field flagged for review |
-| HITL routing recall | **100%** — no low-confidence field slipped through |
+| Field-level accuracy | **85.2%** (23/27 fields) — not 100%, by design |
+| HITL routing precision | **100%** — every wrong field flagged for human review |
+| HITL routing recall | **100%** — no low-confidence field went live unreviewed |
 | Avg confidence (correct fields) | **0.795** |
 | Avg confidence (incorrect fields) | **0.345** |
 | Calibration gap | **+0.450** — system is measurably less confident when it's wrong |
 
-_Includes 4 adversarial cases: datasheet typo contradiction, irrecoverable missing field, OCR misread on worn label, outdated web-only source. All 4 failures were correctly routed to human review. Full methodology in [docs/EVALUATION.md](docs/EVALUATION.md)._
+_Includes 4 adversarial cases designed to produce wrong answers: datasheet typo contradiction (system picks wrong value but correctly flags CONTRADICTION), irrecoverable missing field (NO\_SOURCE\_FOUND, confidence=0), OCR misread on worn label, outdated web-only source. All 4 failures correctly routed to human review. Full methodology: [docs/EVALUATION.md](docs/EVALUATION.md)._
 
 ## Tech Stack
 
-- **Backend**: Python 3.11, FastAPI, async, SSE streaming
-- **LLM**: Groq API — `llama-3.3-70b-versatile` for extraction; `llama-4-scout` for vision (where available)
-- **RAG / Vector store**: pgvector (Postgres) for catalog retrieval
-- **Database**: Postgres — product records, field-level audit trail, review queue
-- **Frontend**: Next.js 14, Tailwind CSS
-- **Containerisation**: Docker + docker-compose
-- **Deploy**: Vercel (frontend) + Render (backend) + Supabase (hosted pgvector)
-- **CI**: GitHub Actions — lint, test, build on every push
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.11, FastAPI, async SQLAlchemy, SSE streaming |
+| LLM | Groq API — `llama-3.3-70b-versatile` (extraction), `llama-4-scout` (vision) |
+| Vector DB | pgvector (Postgres extension) — catalog RAG |
+| Database | Postgres — product records, field audit trail, review queue |
+| Frontend | Next.js 14 (App Router), Tailwind CSS, TypeScript |
+| Containers | Docker + docker-compose — one-command local stack |
+| Deploy | Vercel (frontend) + Render (backend) + Supabase (hosted pgvector) |
+| CI | GitHub Actions — Python 3.11 & 3.12 matrix, lint, type-check, tests, coverage, eval |
 
-## Repo Note
+## Running Tests
 
-_Built at UNIHACK. The repository is named Unindustry (team name) — the project is called ProductTruth. Core logic developed over ~12 hours; commits reflect integration milestones rather than every individual change._
+```bash
+# All tests
+pytest api/tests/ -v
+
+# Verifier unit tests only (no DB needed)
+pytest api/tests/test_verifier.py -v
+
+# Eval (no DB, no API key)
+python scripts/eval.py
+
+# Live pipeline smoke test (needs GROQ_API_KEY in .env)
+python scripts/test_pipeline.py
+```
+
+## Development Note
+
+_Built at UNIHACK as a two-person sprint ([@Pradhyut21](https://github.com/Pradhyut21) + Kishan). Commit history reflects integration milestones across the build session — the verifier scoring logic, eval methodology, and agent separation represent the bulk of the design work._
 
 ## What's Next
 
-- Scale RAG index to full real manufacturer catalog corpora
+- Scale RAG index to full real manufacturer catalog corpora (currently 3 synthetic fixture files)
 - Active learning: HITL corrections feed back into verifier confidence calibration
-- Second schema target: GS1 (retail/FMCG adjacency)
-- Provider abstraction for VLM (swap llama-4-scout → GPT-4o-vision or Gemini)
-- Akeneo / Pimcore direct PIM export
+- Second schema standard: GS1 (retail/FMCG adjacency beyond ETIM)
+- Vision tier: enable `llama-4-scout` when Groq access is available
+- PIM export: Akeneo / Pimcore direct integration
 
 ## License
 
