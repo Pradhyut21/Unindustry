@@ -230,7 +230,8 @@ def verify_field(
         candidates, n_agreeing, has_contradiction, any_low_quality
     )
 
-    if n_agreeing >= min_sources and not has_contradiction:
+    if n_agreeing >= min_sources:
+        # Majority agrees — verified even if a minority contradicts
         verification_status = VerificationStatus.VERIFIED
     elif has_contradiction:
         verification_status = VerificationStatus.CONTRADICTION
