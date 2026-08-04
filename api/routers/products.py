@@ -44,9 +44,7 @@ async def get_product(
     result = await db.execute(
         select(Product)
         .where(Product.id == product_id)
-        .options(
-            selectinload(Product.fields).selectinload(ProductField.sources)
-        )
+        .options(selectinload(Product.fields).selectinload(ProductField.sources))
     )
     product = result.scalar_one_or_none()
     if not product:
@@ -102,9 +100,7 @@ async def create_product(
     await db.commit()
 
     result = await db.execute(
-        select(Product)
-        .where(Product.id == product.id)
-        .options(selectinload(Product.fields))
+        select(Product).where(Product.id == product.id).options(selectinload(Product.fields))
     )
     product = result.scalar_one()
 
