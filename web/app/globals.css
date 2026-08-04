@@ -8,9 +8,21 @@
 }
 
 /* ── Confidence badge colours ── */
-.conf-high   { @apply bg-emerald-500/15 text-emerald-400 border-emerald-500/30; }
-.conf-medium { @apply bg-amber-500/15 text-amber-400 border-amber-500/30; }
-.conf-low    { @apply bg-red-500/15 text-red-400 border-red-500/30; }
+.conf-high {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: rgb(52, 211, 153);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.conf-medium {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: rgb(251, 191, 36);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.conf-low {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: rgb(248, 113, 113);
+  border-color: rgba(239, 68, 68, 0.3);
+}
 
 /* ── Agent card pulse animation ── */
 @keyframes agent-pulse {
