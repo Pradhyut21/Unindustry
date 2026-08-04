@@ -123,6 +123,9 @@ class ProductField(Base):
     )
     field_name: Mapped[str] = mapped_column(String(256), nullable=False)
     value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # When verification_status == CONTRADICTION, this stores the losing value
+    # so the frontend can show both sides without parsing source snippets.
+    contradicting_value: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     confidence: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     verification_status: Mapped[VerificationStatus] = mapped_column(
         Enum(VerificationStatus), default=VerificationStatus.PENDING, nullable=False

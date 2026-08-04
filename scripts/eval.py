@@ -206,7 +206,102 @@ SAMPLE_PRODUCTS: list[SampleProduct] = [
             ],
         },
     ),
+    # ── ADVERSARIAL CASES ────────────────────────────────────────────────────
+    # These are deliberately hard — the system is expected to get some wrong
+    # or correctly refuse to commit. They validate that the calibration gap
+    # is real: when confidence is low, the field IS wrong.
+
+    # 9. Source contradiction — system picks wrong value (doc wins over image
+    #    by weight, but the image was correct and doc was a typo in the sheet)
+    #    Ground truth: 400V (3-phase motor). Doc says 230V (datasheet error).
+    #    Image says 400V (correct nameplate). Verifier picks doc (higher weight)
+    #    → WRONG prediction, but correctly flags SOURCE_CONTRADICTION.
+    SampleProduct(
+        name="Atlas Copco GA11 Compressor Motor",
+        description="ADVERSARIAL: doc has a typo (230V), nameplate shows correct 400V. "
+                    "Verifier picks doc by source weight — wrong answer, but flags contradiction.",
+        ground_truth={
+            "voltage_rating": "400V",   # correct value
+            "power_rating": "11 kW",    # both sources agree — correct
+        },
+        candidates={
+            "voltage_rating": [
+                _c("230V", SourceType.DOC),    # datasheet typo — higher weight, wins
+                _c("400V", SourceType.IMAGE),  # correct nameplate — lower weight, loses
+            ],
+            "power_rating": [
+                _c("11 kW", SourceType.DOC),
+                _c("11 kW", SourceType.IMAGE),
+            ],
+        },
+    ),
+    # 10. Completely irrecoverable field — no source found for a required field.
+    #     Ground truth: "Epoxy-coated aluminium" (material).
+    #     No source at all → final_value=None → definitely wrong.
+    #     Also has a recoverable field to show the system works partially.
+    SampleProduct(
+        name="Parker Hannifin Solenoid Valve",
+        description="ADVERSARIAL: material field has zero sources (irrecoverable). "
+                    "Voltage field is correct. Tests NO_SOURCE_FOUND path.",
+        ground_truth={
+            "voltage_rating": "24V DC",
+            "material": "Epoxy-coated aluminium",  # no source → will be None → wrong
+            "ip_rating": "IP65",
+        },
+        candidates={
+            "voltage_rating": [
+                _c("24V DC", SourceType.DOC),
+                _c("24V DC", SourceType.KG),
+            ],
+            "material": [],  # no source — system correctly returns None, but it's wrong
+            "ip_rating": [_c("IP65", SourceType.DOC)],  # single source → HITL
+        },
+    ),
+    # 11. OCR misread — low-quality vision extraction gets the value wrong,
+    #     and there's no other source to catch it. System is "confident" for
+    #     a single-source low-quality extraction but the value is wrong.
+    #     Specifically: "30A" misread as "3A" (missing zero on a blurry label).
+    SampleProduct(
+        name="Eaton PKZM0 Motor Protector (worn label)",
+        description="ADVERSARIAL: blurry nameplate. Vision reads '3A' but truth is '30A'. "
+                    "Single low-quality image source — should route to HITL, still wrong.",
+        ground_truth={
+            "current_rating": "30A",   # correct
+            "model_number": "PKZM0-32",  # different field, image got this right
+        },
+        candidates={
+            "current_rating": [
+                _c("3A", SourceType.IMAGE, low_quality=True),  # misread — wrong
+            ],
+            "model_number": [
+                _c("PKZM0-32", SourceType.IMAGE, low_quality=True),
+                _c("PKZM0-32", SourceType.DOC),  # confirmed by doc
+            ],
+        },
+    ),
+    # 12. Web-only retrieval for a discontinued product — single WEB source
+    #     gets the certifications wrong (outdated catalog copy).
+    SampleProduct(
+        name="Schneider TeSys D LC1D Contactor (discontinued)",
+        description="ADVERSARIAL: web-only source for a discontinued product. "
+                    "Returns outdated certifications — single low-reliability source.",
+        ground_truth={
+            "certifications": "CE, IEC 60947-4-1, EN 60947-4-1, RoHS",
+            "voltage_rating": "220V AC",  # web got this right
+        },
+        candidates={
+            "certifications": [
+                # Outdated web copy missing RoHS and citing wrong IEC year
+                _c("CE, IEC 947-4-1", SourceType.WEB),
+            ],
+            "voltage_rating": [
+                _c("220V AC", SourceType.WEB),
+                _c("220V AC", SourceType.KG),
+            ],
+        },
+    ),
 ]
+
 
 
 # ---------------------------------------------------------------------------

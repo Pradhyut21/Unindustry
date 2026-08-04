@@ -47,6 +47,7 @@ class ProductFieldOut(BaseModel):
     id: uuid.UUID
     field_name: str
     value: Optional[str]
+    contradicting_value: Optional[str] = None  # populated when verification_status == contradiction
     confidence: float
     verification_status: VerificationStatus
     uncertainty_reason: UncertaintyReason

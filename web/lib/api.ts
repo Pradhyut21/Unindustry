@@ -25,6 +25,7 @@ export interface ProductField {
   id: string;
   field_name: string;
   value: string | null;
+  contradicting_value: string | null;
   confidence: number;
   verification_status: string;
   uncertainty_reason: string;

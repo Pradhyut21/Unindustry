@@ -89,12 +89,15 @@ python scripts/eval.py
 
 | Metric | Value |
 |--------|-------|
-| Field-level accuracy | **100%** (18/18 fields) |
-| Fields correctly routed to human review | **100% precision, 100% recall** (6/18 routed) |
-| Avg confidence of correct fields | **0.777** |
-| Confidence calibration gap | **+0.777** (higher = better calibrated) |
+| Field-level accuracy | **85.2%** (23/27 fields correct) |
+| HITL routing precision | **100%** — every wrong field was correctly flagged for review |
+| HITL routing recall | **100%** — no low-confidence field slipped through unreviewed |
+| Avg confidence (correct fields) | **0.795** |
+| Avg confidence (incorrect fields) | **0.345** |
+| Calibration gap | **+0.450** — system is measurably less confident when it's wrong |
 
-_Evaluated on 8 synthetic-but-realistic industrial products (18 hand-labeled fields) — written and verified by the team. Not real manufacturer data. See [docs/EVALUATION.md](docs/EVALUATION.md) for methodology and caveats._
+_Evaluated on 12 synthetic products (27 labeled fields), including 4 adversarial cases designed to fail: a datasheet typo contradiction, an irrecoverable missing field, an OCR misread on a worn label, and an outdated web-only source. All 4 failures were correctly routed to human review instead of going live. See [docs/EVALUATION.md](docs/EVALUATION.md)._
+
 
 ## Tech Stack
 

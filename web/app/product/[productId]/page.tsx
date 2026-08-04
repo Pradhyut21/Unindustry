@@ -22,12 +22,40 @@ const SOURCE_ICONS: Record<string, string> = {
   human: "✋",
 };
 
+const UNCERTAINTY_LABELS: Record<string, { label: string; color: string }> = {
+  source_contradiction:    { label: "⚡ Source Contradiction",     color: "text-red-400" },
+  single_source:           { label: "⚠ Single Source",            color: "text-amber-400" },
+  low_quality_extraction:  { label: "⚠ Low Quality Extraction",   color: "text-amber-400" },
+  no_source_found:         { label: "✕ No Source Found",          color: "text-red-500" },
+  none:                    { label: "",                             color: "" },
+};
+
 function FieldCard({ field }: { field: ProductField }) {
   const [open, setOpen] = useState(false);
   const confClass = confidenceClass(field.confidence);
+  const isContradiction = field.verification_status === "contradiction";
+  const uncertaintyMeta = UNCERTAINTY_LABELS[field.uncertainty_reason] ?? { label: "", color: "" };
+
+  // Split sources into confirmed vs conflicting based on whether they agree with field.value
+  const confirmingSources = field.sources.filter(
+    (s) =>
+      s.extracted_snippet &&
+      field.value &&
+      s.extracted_snippet.toLowerCase().includes(field.value.toLowerCase().split(" ")[0])
+  );
+  // Everything else goes to conflicting (heuristic — good enough for demo)
+  const conflictingSources = field.sources.filter(
+    (s) => !confirmingSources.includes(s)
+  );
 
   return (
-    <div className="glass rounded-xl overflow-hidden border border-zinc-800/40">
+    <div
+      className={`rounded-xl overflow-hidden border transition-all duration-200 ${
+        isContradiction
+          ? "border-red-500/40 bg-red-950/20"
+          : "glass border-zinc-800/40"
+      }`}
+    >
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -37,10 +65,25 @@ function FieldCard({ field }: { field: ProductField }) {
                 <span className="ml-2 text-zinc-600">· {field.schema_field_id}</span>
               )}
             </div>
-            <div className="text-sm font-medium text-zinc-100 truncate">
-              {field.value || <span className="text-zinc-600 italic">No value found</span>}
-            </div>
+
+            {/* Contradiction: show both values side by side */}
+            {isContradiction && field.contradicting_value ? (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-medium text-zinc-100 bg-zinc-800/60 px-2 py-0.5 rounded">
+                  {field.value}
+                </span>
+                <span className="text-xs text-red-400 font-mono">vs</span>
+                <span className="text-sm font-medium text-red-300 bg-red-950/40 border border-red-500/30 px-2 py-0.5 rounded line-through opacity-70">
+                  {field.contradicting_value}
+                </span>
+              </div>
+            ) : (
+              <div className="text-sm font-medium text-zinc-100 truncate">
+                {field.value || <span className="text-zinc-600 italic">No value found</span>}
+              </div>
+            )}
           </div>
+
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               id={`badge-${field.id}`}
@@ -52,9 +95,18 @@ function FieldCard({ field }: { field: ProductField }) {
           </div>
         </div>
 
-        {field.uncertainty_reason && field.uncertainty_reason !== "none" && (
-          <div className="mt-2 text-xs text-amber-400/80 font-mono">
-            ⚠ {field.uncertainty_reason.replace(/_/g, " ")}
+        {/* Contradiction banner */}
+        {isContradiction && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-red-400 bg-red-950/30 border border-red-500/20 rounded-md px-2 py-1">
+            <span>⚡</span>
+            <span className="font-mono">SOURCE CONTRADICTION — sources disagree on this value. Human review required.</span>
+          </div>
+        )}
+
+        {/* Other uncertainty reasons */}
+        {!isContradiction && uncertaintyMeta.label && (
+          <div className={`mt-2 text-xs font-mono ${uncertaintyMeta.color}`}>
+            {uncertaintyMeta.label}
           </div>
         )}
       </div>
@@ -62,31 +114,55 @@ function FieldCard({ field }: { field: ProductField }) {
       {/* Citation drawer */}
       {open && (
         <div className="citation-drawer border-t border-zinc-800/40 bg-zinc-900/60 p-4">
-          <div className="text-xs text-zinc-500 uppercase tracking-wider font-mono mb-3">
-            Sources ({field.sources.length})
-          </div>
           {field.sources.length === 0 ? (
             <p className="text-xs text-zinc-600">No sources recorded.</p>
           ) : (
-            <div className="space-y-3">
-              {field.sources.map((src) => (
-                <div key={src.id} className="flex gap-3">
-                  <span className="text-base flex-shrink-0">{SOURCE_ICONS[src.source_type] || "?"}</span>
-                  <div>
-                    <div className="text-xs font-mono text-zinc-400 mb-0.5">
-                      {src.source_ref}
-                    </div>
-                    {src.extracted_snippet && (
-                      <div className="text-xs text-zinc-600 italic">
-                        "{src.extracted_snippet}"
+            <div className="space-y-4">
+              {/* Confirmed sources */}
+              {field.sources.length > 0 && (
+                <div>
+                  <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-2">
+                    {isContradiction ? `Supporting "${field.value}"` : `Sources (${field.sources.length})`}
+                  </div>
+                  <div className="space-y-2">
+                    {(isContradiction ? confirmingSources : field.sources).map((src) => (
+                      <div key={src.id} className="flex gap-3">
+                        <span className="text-base flex-shrink-0">{SOURCE_ICONS[src.source_type] || "?"}</span>
+                        <div>
+                          <div className="text-xs font-mono text-zinc-400 mb-0.5">{src.source_ref}</div>
+                          {src.extracted_snippet && (
+                            <div className="text-xs text-zinc-600 italic">"{src.extracted_snippet}"</div>
+                          )}
+                          <div className="text-xs text-zinc-700 mt-0.5">via {src.extraction_agent}</div>
+                        </div>
                       </div>
-                    )}
-                    <div className="text-xs text-zinc-700 mt-0.5">
-                      via {src.extraction_agent}
-                    </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* Conflicting sources — only shown during contradictions */}
+              {isContradiction && field.contradicting_value && (
+                <div>
+                  <div className="text-xs font-mono text-red-500/70 uppercase tracking-wider mb-2">
+                    Conflicting — "{field.contradicting_value}"
+                  </div>
+                  <div className="space-y-2">
+                    {conflictingSources.map((src) => (
+                      <div key={src.id} className="flex gap-3 opacity-70">
+                        <span className="text-base flex-shrink-0">{SOURCE_ICONS[src.source_type] || "?"}</span>
+                        <div>
+                          <div className="text-xs font-mono text-red-400/80 mb-0.5">{src.source_ref}</div>
+                          {src.extracted_snippet && (
+                            <div className="text-xs text-red-600/60 italic">"{src.extracted_snippet}"</div>
+                          )}
+                          <div className="text-xs text-zinc-700 mt-0.5">via {src.extraction_agent}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -94,6 +170,7 @@ function FieldCard({ field }: { field: ProductField }) {
     </div>
   );
 }
+
 
 export default function ProductPage() {
   const { productId } = useParams<{ productId: string }>();

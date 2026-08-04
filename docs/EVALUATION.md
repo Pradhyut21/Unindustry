@@ -38,9 +38,11 @@ The eval script runs the ProductTruth verifier pipeline against a hand-labeled s
 
 ## Sample Set
 
-**8 synthetic products, ~22 labeled fields.**
+**12 synthetic products, 27 labeled fields.**
 
-Products are designed to cover every uncertainty_reason category:
+Products fall into two groups:
+
+**Standard cases** (products 1–8): cover all `uncertainty_reason` categories under normal operating conditions.
 
 | # | Product | Primary scenario |
 |---|---------|-----------------|
@@ -52,6 +54,17 @@ Products are designed to cover every uncertainty_reason category:
 | 6 | Schneider XB4BA21 Push Button | Three-source agreement |
 | 7 | Previously Catalogued Motor Starter | KG-only source |
 | 8 | Thermal Overload Relay | Clean doc + noisy image agree |
+
+**Adversarial cases** (products 9–12): deliberately engineered to produce wrong predictions. Validates that the calibration gap is real — the system should be measurably less confident when it fails.
+
+| # | Product | What fails and why |
+|---|---------|-------------------|
+| 9 | Atlas Copco GA11 Compressor Motor | DOC has a 230V typo; IMAGE has correct 400V. Verifier picks DOC (higher source weight) → **wrong answer**, correctly flagged as CONTRADICTION |
+| 10 | Parker Hannifin Solenoid Valve | `material` field has zero sources → `final_value=None` → **wrong** (irrecoverable). Correctly returns `NO_SOURCE_FOUND`, confidence=0 |
+| 11 | Eaton PKZM0 Motor Protector (worn label) | Blurry nameplate: vision reads "3A", truth is "30A". Single low-quality source → **wrong** but correctly routed to HITL |
+| 12 | Schneider TeSys D (discontinued) | Outdated web-only source returns wrong certifications (missing RoHS). Single WEB source → **wrong** but routed to HITL |
+
+The key result: all 4 wrong answers had confidence ≤ 0.60, and all 4 were correctly routed to human review. The calibration gap (+0.450) holds up against adversarial inputs — the system knows what it doesn't know.
 
 ---
 

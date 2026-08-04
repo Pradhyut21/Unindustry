@@ -173,6 +173,12 @@ class OrchestratorAgent(BaseAgent):
                     product_id=product_id,
                     field_name=field_name,
                     value=result.final_value,
+                    # If sources contradict, store the losing value for display
+                    contradicting_value=(
+                        result.contradicting_sources[0].value
+                        if result.contradicting_sources
+                        else None
+                    ),
                     confidence=result.confidence,
                     verification_status=result.verification_status,
                     uncertainty_reason=result.uncertainty_reason,
