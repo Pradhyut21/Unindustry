@@ -93,11 +93,11 @@ def _normalise_unit(value: str, target_unit: str) -> str:
     E.g. "230 volts" → "230 V", "5.2 kilograms" → "5.2 kg"
     """
     normalizations = {
-        "V": ["volt", "volts", "voltage"],
-        "A": ["amp", "amps", "ampere", "amperes"],
-        "W": ["watt", "watts"],
         "kW": ["kilowatt", "kilowatts"],
-        "kg": ["kilogram", "kilograms", "kilo"],
+        "W": ["watt", "watts"],
+        "V": ["volts", "volt", "voltage"],
+        "A": ["amperes", "ampere", "amps", "amp"],
+        "kg": ["kilograms", "kilogram", "kilo"],
         "mm": ["millimeter", "millimetre"],
         "°C": ["celsius", "degrees c", "deg c"],
         "Hz": ["hertz", "hz"],
