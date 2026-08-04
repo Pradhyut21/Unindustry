@@ -109,5 +109,9 @@ async def review_action(
         field.confidence = 0.0
 
     await db.commit()
-    await db.refresh(item)
-    return item
+    result = await db.execute(
+        select(ReviewQueueItem)
+        .where(ReviewQueueItem.id == item_id)
+        .options(selectinload(ReviewQueueItem.field).selectinload(ProductField.sources))
+    )
+    return result.scalar_one()

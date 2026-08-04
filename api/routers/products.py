@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from api.database import get_db
-from api.models.db import Product, ProductStatus
+from api.models.db import Product, ProductField, ProductStatus
 from api.models.schemas import ProductOut, ProductSummaryOut
 
 router = APIRouter()
@@ -45,9 +45,7 @@ async def get_product(
         select(Product)
         .where(Product.id == product_id)
         .options(
-            selectinload(Product.fields).selectinload(
-                __import__("api.models.db", fromlist=["ProductField"]).ProductField.sources
-            )
+            selectinload(Product.fields).selectinload(ProductField.sources)
         )
     )
     product = result.scalar_one_or_none()
@@ -102,7 +100,13 @@ async def create_product(
     )
     db.add(product)
     await db.commit()
-    await db.refresh(product)
+
+    result = await db.execute(
+        select(Product)
+        .where(Product.id == product.id)
+        .options(selectinload(Product.fields))
+    )
+    product = result.scalar_one()
 
     # Pipeline is triggered via SSE stream endpoint (client subscribes then calls /run)
     return product
