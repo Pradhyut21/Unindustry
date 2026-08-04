@@ -1,0 +1,45 @@
+ABB CIRCUIT BREAKERS S200 SERIES — PRODUCT CATALOG EXCERPT
+Manufacturer: ABB Ltd.
+Category: Miniature Circuit Breakers (MCB)
+
+MODEL: S201-B16
+
+Rated Voltage: 230/400V AC, 60V DC
+Rated Current: 16A
+Frequency: 50/60 Hz
+Tripping Characteristic: B (3–5 × In)
+Number of Poles: 1
+Breaking Capacity: 6000A (Icn), 6kA (ICS)
+IP Rating: IP20 (terminals covered: IP30)
+Operating Temperature: -35°C to +70°C
+Dimensions: 17.5 mm × 84.5 mm × 73.5 mm (W × H × D)
+Weight: 0.085 kg
+Housing Material: Polycarbonate (PC), self-extinguishing
+Certifications: CE, IEC 60898-1, EN 60898-1, VDE, UL Listed
+Model Number: S201-B16
+Part Number: 2CDS251001R0165
+Catalog Number: 2CDS251001R0165
+
+Description:
+The ABB S200 series miniature circuit breaker provides reliable overload and
+short-circuit protection for residential, commercial, and light industrial
+applications. The S201-B16 is a 1-pole, 16A breaker with B-characteristic,
+ideal for resistive and slightly inductive loads. DIN rail mounting per EN 60715.
+
+Product Type: Miniature Circuit Breaker (MCB)
+ETIM Class: EC000217 — Miniature Circuit Breaker
+
+TECHNICAL SPECIFICATIONS:
+- Rated short-circuit capacity: 6kA
+- Trip time at 5× In: < 0.1s
+- Mounting: DIN rail (35 mm) per EN 60715
+- Conductor cross-section: 1–25 mm² (solid or stranded)
+- Connection type: Screw terminals
+- Pollution degree: 2
+- Insulation voltage: 500V AC
+- Altitude: up to 2000 m (no derating)
+
+ORDERING INFORMATION:
+1P: S201-B16 (2CDS251001R0165)
+2P: S202-B16 (2CDS252001R0165)
+3P: S203-B16 (2CDS253001R0165)

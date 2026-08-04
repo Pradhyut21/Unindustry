@@ -1,0 +1,105 @@
+{
+  "schema_id": "etim_industrial_v1",
+  "version": "1.0",
+  "description": "ETIM-inspired schema for industrial electrical and mechanical products. Based on ETIM International standard (electro-technical information model). See https://www.etim-international.com/",
+  "fields": {
+    "EF000001": {
+      "name": "voltage_rating",
+      "label": "Rated Voltage",
+      "unit": "V",
+      "type": "string",
+      "aliases": ["voltage_rating", "rated voltage", "supply voltage", "nominal voltage"]
+    },
+    "EF000002": {
+      "name": "current_rating",
+      "label": "Rated Current",
+      "unit": "A",
+      "type": "string",
+      "aliases": ["current_rating", "rated current", "nominal current"]
+    },
+    "EF000003": {
+      "name": "power_rating",
+      "label": "Rated Power",
+      "unit": "W",
+      "type": "string",
+      "aliases": ["power_rating", "rated power", "power consumption"]
+    },
+    "EF000004": {
+      "name": "frequency",
+      "label": "Frequency",
+      "unit": "Hz",
+      "type": "string",
+      "aliases": ["frequency", "rated frequency", "supply frequency"]
+    },
+    "EF000005": {
+      "name": "ip_rating",
+      "label": "IP Rating (Ingress Protection)",
+      "unit": "",
+      "type": "string",
+      "aliases": ["ip_rating", "ip code", "ingress protection", "protection class"]
+    },
+    "EF000006": {
+      "name": "operating_temperature",
+      "label": "Operating Temperature Range",
+      "unit": "°C",
+      "type": "string",
+      "aliases": ["operating_temperature", "ambient temperature", "temperature range"]
+    },
+    "EF000007": {
+      "name": "dimensions",
+      "label": "Dimensions (L × W × H)",
+      "unit": "mm",
+      "type": "string",
+      "aliases": ["dimensions", "size", "l x w x h", "overall dimensions"]
+    },
+    "EF000008": {
+      "name": "weight",
+      "label": "Weight",
+      "unit": "kg",
+      "type": "string",
+      "aliases": ["weight", "mass", "net weight"]
+    },
+    "EF000009": {
+      "name": "material",
+      "label": "Housing Material",
+      "unit": "",
+      "type": "string",
+      "aliases": ["material", "housing material", "body material", "enclosure material"]
+    },
+    "EF000010": {
+      "name": "certifications",
+      "label": "Certifications & Standards",
+      "unit": "",
+      "type": "string",
+      "aliases": ["certifications", "approvals", "standards", "compliance"]
+    },
+    "EF000011": {
+      "name": "model_number",
+      "label": "Model / Part Number",
+      "unit": "",
+      "type": "string",
+      "aliases": ["model_number", "model", "part number", "catalog number", "order code"]
+    },
+    "EF000012": {
+      "name": "manufacturer",
+      "label": "Manufacturer",
+      "unit": "",
+      "type": "string",
+      "aliases": ["manufacturer", "brand", "made by", "manufacturer name"]
+    },
+    "EF000013": {
+      "name": "product_category",
+      "label": "Product Category (ETIM Class)",
+      "unit": "",
+      "type": "string",
+      "aliases": ["product_category", "category", "product type", "etim class", "classification"]
+    },
+    "EF000014": {
+      "name": "description",
+      "label": "Product Description",
+      "unit": "",
+      "type": "string",
+      "aliases": ["description", "product description", "overview", "summary"]
+    }
+  }
+}

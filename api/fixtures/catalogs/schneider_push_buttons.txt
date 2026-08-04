@@ -1,0 +1,40 @@
+SCHNEIDER ELECTRIC HARMONY PUSH BUTTONS — PRODUCT CATALOG EXCERPT
+Manufacturer: Schneider Electric
+Category: Push Buttons / Pilot Devices
+
+MODEL: XB4BA21
+
+Button Type: Flush push button, 1 NO contact
+Rated Voltage: 250V AC / 300V DC
+Rated Current: 6A (AC-15) / 3A (DC-13)
+Frequency: 50/60 Hz
+IP Rating: IP66, IP67, IP69K (front face)
+Operating Temperature: -25°C to +70°C
+Dimensions (mounting hole): 22 mm diameter
+Overall Dimensions: 35 mm × 60 mm (body diameter × depth)
+Weight: 0.12 kg
+Housing Material: Thermoplastic, zinc alloy bezel
+Button Colour: Black
+Certifications: CE, UL, CSA, RoHS, IEC 60947-5-1, EN 60947-5-1
+Model Number: XB4BA21
+Part Number: XB4BA21
+
+Description:
+The Schneider Electric Harmony XB4 series push button is designed for
+22 mm diameter panel cutouts. The flush black button with 1 NO contact block
+is suitable for harsh industrial environments with IP66/67/69K front protection.
+Spring return action. Panel thickness: 1–6 mm.
+
+Product Type: Push Button
+ETIM Class: EC000050 — Push Button
+
+TECHNICAL SPECIFICATIONS:
+- Contact type: 1 NO (normally open)
+- Actuator type: Flush
+- Operating force: 5.5 N (±30%)
+- Mechanical life: 1 million operations
+- Electrical life (AC-15): 200,000 operations
+- Panel mounting: 22 mm Ø cutout
+- Tightening torque: 1.2 N·m
+- Vibration resistance: 25 G (IEC 60068-2-6)
+- Shock resistance: 30 G (IEC 60068-2-27)

@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: producttruth_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-producttruth}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-producttruth}
+      POSTGRES_DB: ${POSTGRES_DB:-producttruth}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-producttruth}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: producttruth_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-producttruth}:${POSTGRES_PASSWORD:-producttruth}@postgres:5432/${POSTGRES_DB:-producttruth}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD:-0.7}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./api:/app/api
+      - ./schemas:/app/schemas
+      - uploads:/app/uploads
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.web
+    container_name: producttruth_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  uploads:

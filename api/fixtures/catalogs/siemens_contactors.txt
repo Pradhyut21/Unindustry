@@ -1,0 +1,41 @@
+SIEMENS 3RT2 SERIES CONTACTORS — PRODUCT CATALOG EXCERPT
+Manufacturer: Siemens AG
+Category: Electromechanical Contactors / Motor Starters
+
+MODEL: 3RT2015-1AP01
+
+Rated Voltage: 230V AC
+Rated Current: 7A
+Rated Power: 3 kW (at 400V AC)
+Frequency: 50/60 Hz
+Operating Temperature: -25°C to +60°C
+IP Rating: IP20 (open mounting); IP44 with enclosure
+Dimensions: 45 mm × 57 mm × 70 mm (W × H × D)
+Weight: 0.24 kg
+Housing Material: Thermoplastic (PA)
+Certifications: CE, UL, CSA, RoHS, IEC 60947-4-1, EN 60947-4-1
+Model Number: 3RT2015-1AP01
+Part Number: 3RT2015-1AP01
+Catalog Number: 3RT2015-1AP01
+
+Description:
+The Siemens 3RT2015 is a 3-pole contactor designed for motor control applications
+in industrial automation. Suitable for switching motors up to 3 kW at 400V AC.
+The snap-on auxiliary contact blocks allow for easy circuit expansion.
+DIN rail mounting. Integrated surge suppressor option available.
+
+Product Type: Contactor
+ETIM Class: EC001058 — Contactor
+
+TECHNICAL SPECIFICATIONS:
+- Control circuit voltage: 230V AC 50/60 Hz
+- Switching cycles: 10 million mechanical, 1.5 million electrical
+- Pollution degree: 3
+- Utilisation category: AC-3 (induction motor start, running)
+- Short-circuit protection: by fuse (type gL/gG)
+- Ambient temperature storage: -60°C to +80°C
+- Coil power (AC50): 5.7 VA holding, 27 VA inrush
+
+ORDERING INFORMATION:
+Standard: 3RT2015-1AP01
+With auxiliary contact: 3RT2015-1AP01 + 3RH2911-1HA01
