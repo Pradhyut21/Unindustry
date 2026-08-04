@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* ── Confidence badge colours ── */
+.conf-high   { @apply bg-emerald-500/15 text-emerald-400 border-emerald-500/30; }
+.conf-medium { @apply bg-amber-500/15 text-amber-400 border-amber-500/30; }
+.conf-low    { @apply bg-red-500/15 text-red-400 border-red-500/30; }
+
+/* ── Agent card pulse animation ── */
+@keyframes agent-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(139, 92, 246, 0.15); }
+}
+
+.agent-active {
+  animation: agent-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── SSE stream dot ── */
+@keyframes stream-dot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.stream-dot { animation: stream-dot 1.4s ease-in-out infinite; }
+.stream-dot:nth-child(2) { animation-delay: 0.2s; }
+.stream-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Glassmorphism card ── */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Citation drawer slide ── */
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.citation-drawer {
+  animation: slide-down 0.2s ease-out;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
