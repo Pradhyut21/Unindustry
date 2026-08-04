@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { createPipelineStream, getProduct, AgentEvent, Product } from "@/lib/api";
+import { createPipelineStream, AgentEvent } from "@/lib/api";
 
 const AGENTS = [
   { id: "orchestrator", label: "Orchestrator", desc: "Planning extraction strategy" },
