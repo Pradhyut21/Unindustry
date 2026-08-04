@@ -45,7 +45,7 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/producttruth_test
-          ANTHROPIC_API_KEY: "sk-ant-test-key-not-real"
+          GROQ_API_KEY: "gsk_test_key_not_real"
           CONFIDENCE_THRESHOLD: "0.7"
         run: pytest api/tests/ --cov=api --cov-report=term-missing -v
 

@@ -15,9 +15,10 @@ services:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-producttruth}"]
-      interval: 10s
+      interval: 5s      # check every 5s (down from 10s — catches ready state faster)
       timeout: 5s
-      retries: 5
+      retries: 10       # up from 5 — gives Postgres up to 50s to be ready
+      start_period: 10s # don't count failures in the first 10s of startup
 
   api:
     build:
@@ -25,20 +26,35 @@ services:
       dockerfile: Dockerfile
     container_name: producttruth_api
     restart: unless-stopped
+    # ── env_file loads .env from the project root into the container ──────────
+    # Without this, environment: block variables can be set but .env is NOT
+    # automatically loaded inside the container — only on the host.
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     environment:
+      # These override / supplement .env — DATABASE_URL must use the docker
+      # service name "postgres" (not localhost) for container-to-container comms.
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-producttruth}:${POSTGRES_PASSWORD:-producttruth}@postgres:5432/${POSTGRES_DB:-producttruth}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
       CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD:-0.7}
       ENVIRONMENT: ${ENVIRONMENT:-development}
+      # CORS: allow the web container and any Vercel preview URL
+      CORS_ORIGINS: "http://localhost:3000,https://*.vercel.app"
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_healthy   # waits for healthcheck to pass, not just boot
     volumes:
       - ./api:/app/api
       - ./schemas:/app/schemas
       - uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   web:
     build:
@@ -49,9 +65,12 @@ services:
     ports:
       - "3000:3000"
     environment:
+      # Must point at the host-accessible API, not the docker network name,
+      # because this URL is used by the browser (client-side), not the container.
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     depends_on:
-      - api
+      api:
+        condition: service_healthy   # won't start until api /health returns 200
 
 volumes:
   pgdata:

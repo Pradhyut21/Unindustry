@@ -28,17 +28,21 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# CORS — allow the Next.js frontend and deployed Vercel origin
+# CORS — allow the Next.js frontend (dev + Vercel previews)
+# NOTE: CORSMiddleware does NOT support wildcards mid-string in allow_origins.
+# Use allow_origin_regex for *.vercel.app pattern.
 # ---------------------------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://*.vercel.app",
+        "http://127.0.0.1:3000",
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],   # needed for SSE EventSource to read headers
 )
 
 

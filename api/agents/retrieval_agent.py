@@ -74,7 +74,7 @@ class RetrievalAgent(BaseAgent):
 
         # 2. LLM-assisted retrieval for fields still missing
         still_missing = [f for f in missing_fields if f not in field_candidates]
-        if still_missing and settings.anthropic_api_key:
+        if still_missing and settings.groq_api_key:
             llm_results = await self._llm_retrieval(
                 product_name, still_missing, known_fields or {}
             )
@@ -154,11 +154,11 @@ class RetrievalAgent(BaseAgent):
         known_fields: dict[str, str],
     ) -> list[tuple[str, CandidateValue]]:
         """
-        Use Claude to infer likely values for missing fields based on
+        Use Groq (llama-3.3-70b) to infer likely values for missing fields based on
         the product name and known fields. Marked as low-confidence WEB source.
         """
         try:
-            import anthropic
+            from openai import AsyncOpenAI
 
             context = "\n".join(f"  {k}: {v}" for k, v in known_fields.items())
             fields_str = ", ".join(missing_fields)
@@ -175,47 +175,41 @@ Rules:
 - Only provide values that are TYPICAL or STANDARD for this type of industrial product
 - Do NOT invent specific model numbers or certifications you cannot reasonably infer
 - Mark uncertain values with a ~ prefix (e.g., "~230V" means "probably 230V but verify")
-- Return JSON only
+- Return JSON only.
 
 Return format:
-{{
-  "field_name": "value or null if you cannot reasonably infer it",
-  ...
-}}"""
+{{"field_name": "value or null if you cannot reasonably infer it"}}"""
 
-            client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
-            message = await client.messages.create(
-                model=settings.claude_extraction_model,
-                max_tokens=512,
+            client = AsyncOpenAI(
+                api_key=settings.groq_api_key,
+                base_url="https://api.groq.com/openai/v1",
+            )
+            response = await client.chat.completions.create(
+                model=settings.groq_extraction_model,
                 messages=[{"role": "user", "content": prompt}],
+                max_tokens=512,
+                temperature=0.0,
+                response_format={"type": "json_object"},
             )
 
-            raw = message.content[0].text.strip()
-            if raw.startswith("```"):
-                raw = raw.split("```")[1]
-                if raw.startswith("json"):
-                    raw = raw[4:]
-
-            extracted = json.loads(raw)
+            extracted = json.loads(response.choices[0].message.content or "{}")
             results: list[tuple[str, CandidateValue]] = []
 
             for field_name, value in extracted.items():
                 if value and isinstance(value, str):
                     low_quality = value.startswith("~")
                     clean_value = value.lstrip("~").strip()
-                    results.append(
-                        (
-                            field_name,
-                            CandidateValue(
-                                value=clean_value,
-                                source_type=SourceType.WEB,
-                                source_ref="llm:inferred",
-                                extracted_snippet=f"LLM inferred from product name: {product_name}",
-                                extraction_agent="retrieval_agent:claude",
-                                low_quality=low_quality,
-                            ),
-                        )
-                    )
+                    results.append((
+                        field_name,
+                        CandidateValue(
+                            value=clean_value,
+                            source_type=SourceType.WEB,
+                            source_ref="llm:inferred",
+                            extracted_snippet=f"LLM inferred from product name: {product_name}",
+                            extraction_agent="retrieval_agent:groq",
+                            low_quality=low_quality,
+                        ),
+                    ))
             return results
 
         except Exception as exc:

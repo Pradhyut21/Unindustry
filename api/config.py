@@ -16,10 +16,12 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://producttruth:producttruth@localhost:5432/producttruth"
     )
 
-    # Anthropic / Claude
-    anthropic_api_key: str = ""
-    claude_extraction_model: str = "claude-3-5-haiku-20241022"   # cheap, high-volume
-    claude_verification_model: str = "claude-3-5-sonnet-20241022"  # stronger, used only for verify step
+    # Groq API (OpenAI-compatible)
+    groq_api_key: str = ""
+    # llama-3.3-70b-versatile — strong quality, still fast on Groq
+    groq_extraction_model: str = "llama-3.3-70b-versatile"
+    # llama-4-scout — Groq's multimodal model for vision
+    groq_vision_model: str = "meta-llama/llama-4-scout-17b-16e-instruct"
 
     # Pipeline behaviour
     confidence_threshold: float = 0.7  # fields below this go to HITL queue
