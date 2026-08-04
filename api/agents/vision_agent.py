@@ -90,6 +90,18 @@ class VisionAgent(BaseAgent):
             )
             return {}
 
+        if not settings.groq_vision_model:
+            # Vision model not available on this Groq tier — skip gracefully.
+            # Doc-intel and retrieval agents will cover what we miss here.
+            await self.emit_event(
+                product_id,
+                "agent_complete",
+                f"Vision model not configured (GROQ_VISION_MODEL is blank) — "
+                f"{len(image_paths)} image(s) skipped. "
+                f"Set GROQ_VISION_MODEL to enable. Doc-intel covers extraction.",
+            )
+            return {}
+
         await self.emit_event(
             product_id, "agent_start",
             f"Analyzing {len(image_paths)} image(s) with {settings.groq_vision_model}..."

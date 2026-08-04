@@ -18,10 +18,12 @@ class Settings(BaseSettings):
 
     # Groq API (OpenAI-compatible)
     groq_api_key: str = ""
-    # llama-3.3-70b-versatile — strong quality, still fast on Groq
+    # llama-3.3-70b-versatile — strong quality, fast on Groq
     groq_extraction_model: str = "llama-3.3-70b-versatile"
-    # llama-4-scout — Groq's multimodal model for vision
-    groq_vision_model: str = "meta-llama/llama-4-scout-17b-16e-instruct"
+    # Vision model — llama-4-scout requires upgraded Groq tier.
+    # Set to empty string to fall back to text-only image description.
+    # If you have access: "meta-llama/llama-4-scout-17b-16e-instruct"
+    groq_vision_model: str = ""  # leave blank if not on vision tier
 
     # Pipeline behaviour
     confidence_threshold: float = 0.7  # fields below this go to HITL queue
