@@ -1,7 +1,9 @@
 # ProductTruth
 
-![CI](https://github.com/PLACEHOLDER/producttruth/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Pradhyut21/Unindustry/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![Tests](https://img.shields.io/badge/tests-37%20passing-brightgreen)
 
 > Turns limited product inputs into commerce-ready records where every field
 > is confidence-scored and traceable to its source — instead of silently hallucinated.
