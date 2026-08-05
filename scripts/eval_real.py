@@ -64,7 +64,6 @@ async def run_real_eval() -> list[dict[str, Any]]:
                     pdf_path = str(bundled)
 
             fields_dict: dict[str, str] = {}
-            db_connected = False
             try:
                 from sqlalchemy import select
                 from sqlalchemy.orm import selectinload
