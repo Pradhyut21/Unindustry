@@ -66,8 +66,10 @@ async def startup_event() -> None:
         await init_db()
         logger.info("Database initialised")
     except Exception as exc:
-        logger.warning("Database initialisation failed on startup (server starting in fallback/degraded mode)", error=str(exc))
-
+        logger.warning(
+            "Database initialisation failed on startup (server starting in fallback/degraded mode)",
+            error=str(exc),
+        )
 
 
 # ---------------------------------------------------------------------------
