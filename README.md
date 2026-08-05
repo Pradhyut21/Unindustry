@@ -18,7 +18,7 @@
 
 | What | Result |
 |------|--------|
-| Live Production App | 🌐 [producttruth.vercel.app](https://producttruth.vercel.app) (or `docker compose up` → click **▶ Run live demo**) |
+| Live Production App | 🌐 [unindustry-alpha.vercel.app](https://unindustry-alpha.vercel.app) (or `docker compose up` → click **▶ Run live demo**) |
 | What's novel | `SOURCE_CONTRADICTION` — system shows BOTH conflicting values instead of silently picking one |
 | Benchmark Eval | **85.2%** accuracy on 27-field benchmark (`python -m scripts.eval`) |
 | Real-World Eval | **87.5%** accuracy on real manufacturer PDFs (`python -m scripts.eval_real`) |
@@ -119,7 +119,7 @@ Open [http://localhost:3000](http://localhost:3000) — upload `api/fixtures/sam
 
 ## Live Demo
 
-> 🌐 **Live Web App**: [https://producttruth.vercel.app](https://producttruth.vercel.app)
+> 🌐 **Live Web App**: [https://unindustry-alpha.vercel.app](https://unindustry-alpha.vercel.app)
 > 🚀 **Zero-Config Run**: Click **▶ Run live demo (no setup needed)** on the landing page to trigger the bundled Siemens 3RT2015 contactor datasheet enrichment pipeline — live contradiction detection, confidence calibration chart, SSE agent animation, and citation drawer in under 30 seconds.
 
 ## Results
