@@ -19,36 +19,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable}`}>
-      <body className="bg-zinc-950 text-zinc-100 min-h-screen antialiased">
+      <body style={{ background: "var(--neutral-50)", color: "var(--neutral-900)", minHeight: "100vh" }}>
         {/* Nav */}
-        <nav className="border-b border-zinc-800/60 bg-zinc-950/80 backdrop-blur-sm sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold">
-                PT
-              </div>
-              <span className="font-semibold text-zinc-100 group-hover:text-white transition-colors">
-                ProductTruth
-              </span>
+        <nav className="nav">
+          <div className="nav-inner">
+            <Link href="/" className="nav-logo">
+              <div className="nav-logo-badge">PT</div>
+              <span className="nav-logo-text">ProductTruth</span>
             </Link>
-            <div className="flex items-center gap-6 text-sm">
-              <Link
-                href="/"
-                className="text-zinc-400 hover:text-zinc-100 transition-colors"
-              >
-                Analyze
-              </Link>
-              <Link
-                href="/review"
-                className="text-zinc-400 hover:text-zinc-100 transition-colors"
-              >
-                Review Queue
-              </Link>
+            <div className="nav-links">
+              <Link href="/" className="nav-link">Dashboard</Link>
+              <Link href="/analyze" className="nav-link">Analyze</Link>
+              <Link href="/review" className="nav-link">Review Queue</Link>
               <a
                 href="https://github.com/Pradhyut21/Unindustry"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-zinc-400 hover:text-zinc-100 transition-colors"
+                className="nav-link"
               >
                 GitHub
               </a>

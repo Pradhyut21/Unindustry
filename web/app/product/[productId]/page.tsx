@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { getProduct, Product, ProductField } from "@/lib/api";
 
 function confidenceClass(c: number): string {
@@ -23,11 +24,11 @@ const SOURCE_ICONS: Record<string, string> = {
 };
 
 const UNCERTAINTY_LABELS: Record<string, { label: string; color: string }> = {
-  source_contradiction:    { label: "⚡ Source Contradiction",     color: "text-red-400" },
-  single_source:           { label: "⚠ Single Source",            color: "text-amber-400" },
-  low_quality_extraction:  { label: "⚠ Low Quality Extraction",   color: "text-amber-400" },
-  no_source_found:         { label: "✕ No Source Found",          color: "text-red-500" },
-  none:                    { label: "",                             color: "" },
+  source_contradiction:   { label: "⚡ Source Contradiction", color: "var(--red)" },
+  single_source:          { label: "⚠ Single Source", color: "#D97706" },
+  low_quality_extraction: { label: "⚠ Low Quality Extraction", color: "#D97706" },
+  no_source_found:        { label: "✕ No Source Found", color: "var(--red)" },
+  none:                   { label: "", color: "" },
 };
 
 function FieldCard({ field }: { field: ProductField }) {
@@ -36,76 +37,73 @@ function FieldCard({ field }: { field: ProductField }) {
   const isContradiction = field.verification_status === "contradiction";
   const uncertaintyMeta = UNCERTAINTY_LABELS[field.uncertainty_reason] ?? { label: "", color: "" };
 
-  // Split sources into confirmed vs conflicting based on whether they agree with field.value
   const confirmingSources = field.sources.filter(
     (s) =>
       s.extracted_snippet &&
       field.value &&
       s.extracted_snippet.toLowerCase().includes(field.value.toLowerCase().split(" ")[0])
   );
-  // Everything else goes to conflicting (heuristic — good enough for demo)
   const conflictingSources = field.sources.filter(
     (s) => !confirmingSources.includes(s)
   );
 
   return (
     <div
-      className={`rounded-xl overflow-hidden border transition-all duration-200 ${
-        isContradiction
-          ? "border-red-500/40 bg-red-950/20"
-          : "glass border-zinc-800/40"
-      }`}
+      style={{
+        background: "var(--white)",
+        border: isContradiction ? "1.5px solid var(--red)" : "1px solid var(--neutral-200)",
+        borderRadius: "0.75rem",
+        overflow: "hidden",
+        boxShadow: "var(--shadow-sm)",
+        transition: "all 0.15s ease",
+      }}
     >
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="text-xs text-zinc-500 font-mono uppercase tracking-wide mb-1">
+      <div style={{ padding: "1rem 1.25rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.75rem" }}>
+          <div style={{ flex: "1 1 0%", minWidth: 0 }}>
+            <div style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--neutral-400)", marginBottom: "0.25rem", fontFamily: "var(--font-mono)" }}>
               {field.field_name.replace(/_/g, " ")}
               {field.schema_field_id && (
-                <span className="ml-2 text-zinc-600">· {field.schema_field_id}</span>
+                <span style={{ color: "var(--neutral-400)", marginLeft: "0.5rem" }}>· {field.schema_field_id}</span>
               )}
             </div>
 
-            {/* Contradiction: show both values side by side */}
             {isContradiction && field.contradicting_value ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-medium text-zinc-100 bg-zinc-800/60 px-2 py-0.5 rounded">
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--neutral-900)", background: "var(--neutral-100)", padding: "0.125rem 0.5rem", borderRadius: "0.25rem" }}>
                   {field.value}
                 </span>
-                <span className="text-xs text-red-400 font-mono">vs</span>
-                <span className="text-sm font-medium text-red-300 bg-red-950/40 border border-red-500/30 px-2 py-0.5 rounded line-through opacity-70">
+                <span style={{ fontSize: "0.75rem", color: "var(--red)", fontWeight: 700, fontFamily: "var(--font-mono)" }}>vs</span>
+                <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--red)", background: "var(--red-light)", padding: "0.125rem 0.5rem", borderRadius: "0.25rem", textDecoration: "line-through", opacity: 0.8 }}>
                   {field.contradicting_value}
                 </span>
               </div>
             ) : (
-              <div className="text-sm font-medium text-zinc-100 truncate">
-                {field.value || <span className="text-zinc-600 italic">No value found</span>}
+              <div style={{ fontSize: "0.9375rem", fontWeight: 700, color: "var(--neutral-900)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {field.value || <span style={{ color: "var(--neutral-400)", fontStyle: "italic", fontWeight: 400 }}>No value found</span>}
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              id={`badge-${field.id}`}
-              onClick={() => setOpen(!open)}
-              className={`border rounded-md px-2 py-0.5 text-xs font-mono font-medium cursor-pointer hover:opacity-80 transition-opacity ${confClass}`}
-            >
-              {confidenceLabel(field.confidence)}
-            </button>
-          </div>
+          <button
+            id={`badge-${field.id}`}
+            onClick={() => setOpen(!open)}
+            className={`conf-badge ${field.confidence >= 0.8 ? "high" : field.confidence >= 0.6 ? "medium" : "low"}`}
+            style={{ cursor: "pointer" }}
+          >
+            {confidenceLabel(field.confidence)}
+          </button>
         </div>
 
-        {/* Contradiction banner */}
         {isContradiction && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-red-400 bg-red-950/30 border border-red-500/20 rounded-md px-2 py-1">
+          <div style={{ marginTop: "0.625rem", fontSize: "0.75rem", color: "var(--red)", background: "var(--red-light)", border: "1px solid rgba(200,16,46,0.25)", borderRadius: "0.375rem", padding: "0.375rem 0.625rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.375rem" }}>
             <span>⚡</span>
-            <span className="font-mono">SOURCE CONTRADICTION — sources disagree on this value. Human review required.</span>
+            <span>SOURCE CONTRADICTION — sources disagree on this value. Human review required.</span>
           </div>
         )}
 
-        {/* Other uncertainty reasons */}
         {!isContradiction && uncertaintyMeta.label && (
-          <div className={`mt-2 text-xs font-mono ${uncertaintyMeta.color}`}>
+          <div style={{ marginTop: "0.5rem", fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: uncertaintyMeta.color, fontWeight: 600 }}>
             {uncertaintyMeta.label}
           </div>
         )}
@@ -113,50 +111,46 @@ function FieldCard({ field }: { field: ProductField }) {
 
       {/* Citation drawer */}
       {open && (
-        <div className="citation-drawer border-t border-zinc-800/40 bg-zinc-900/60 p-4">
+        <div style={{ borderTop: "1px solid var(--neutral-200)", background: "var(--neutral-50)", padding: "1rem 1.25rem" }}>
           {field.sources.length === 0 ? (
-            <p className="text-xs text-zinc-600">No sources recorded.</p>
+            <p style={{ fontSize: "0.75rem", color: "var(--neutral-400)" }}>No sources recorded.</p>
           ) : (
-            <div className="space-y-4">
-              {/* Confirmed sources */}
-              {field.sources.length > 0 && (
-                <div>
-                  <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-2">
-                    {isContradiction ? `Supporting "${field.value}"` : `Sources (${field.sources.length})`}
-                  </div>
-                  <div className="space-y-2">
-                    {(isContradiction ? confirmingSources : field.sources).map((src) => (
-                      <div key={src.id} className="flex gap-3">
-                        <span className="text-base flex-shrink-0">{SOURCE_ICONS[src.source_type] || "?"}</span>
-                        <div>
-                          <div className="text-xs font-mono text-zinc-400 mb-0.5">{src.source_ref}</div>
-                          {src.extracted_snippet && (
-                            <div className="text-xs text-zinc-600 italic">{`"${src.extracted_snippet}"`}</div>
-                          )}
-                          <div className="text-xs text-zinc-700 mt-0.5">via {src.extraction_agent}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div>
+                <div style={{ fontSize: "0.6875rem", fontFamily: "var(--font-mono)", color: "var(--neutral-500)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: "0.5rem" }}>
+                  {isContradiction ? `Supporting "${field.value}"` : `Sources (${field.sources.length})`}
                 </div>
-              )}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {(isContradiction ? confirmingSources : field.sources).map((src) => (
+                    <div key={src.id} style={{ display: "flex", gap: "0.625rem", fontSize: "0.75rem" }}>
+                      <span style={{ fontSize: "1rem", flexShrink: 0 }}>{SOURCE_ICONS[src.source_type] || "📄"}</span>
+                      <div>
+                        <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--neutral-800)" }}>{src.source_ref}</div>
+                        {src.extracted_snippet && (
+                          <div style={{ color: "var(--neutral-600)", fontStyle: "italic", marginTop: "0.125rem" }}>{`"${src.extracted_snippet}"`}</div>
+                        )}
+                        <div style={{ color: "var(--neutral-400)", fontSize: "0.6875rem", marginTop: "0.125rem" }}>via {src.extraction_agent}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-              {/* Conflicting sources — only shown during contradictions */}
               {isContradiction && field.contradicting_value && (
-                <div>
-                  <div className="text-xs font-mono text-red-500/70 uppercase tracking-wider mb-2">
+                <div style={{ borderTop: "1px border var(--neutral-200)", paddingTop: "0.5rem" }}>
+                  <div style={{ fontSize: "0.6875rem", fontFamily: "var(--font-mono)", color: "var(--red)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: "0.5rem" }}>
                     {`Conflicting — "${field.contradicting_value}"`}
                   </div>
-                  <div className="space-y-2">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     {conflictingSources.map((src) => (
-                      <div key={src.id} className="flex gap-3 opacity-70">
-                        <span className="text-base flex-shrink-0">{SOURCE_ICONS[src.source_type] || "?"}</span>
+                      <div key={src.id} style={{ display: "flex", gap: "0.625rem", fontSize: "0.75rem", opacity: 0.8 }}>
+                        <span style={{ fontSize: "1rem", flexShrink: 0 }}>{SOURCE_ICONS[src.source_type] || "📄"}</span>
                         <div>
-                          <div className="text-xs font-mono text-red-400/80 mb-0.5">{src.source_ref}</div>
+                          <div style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--red)" }}>{src.source_ref}</div>
                           {src.extracted_snippet && (
-                            <div className="text-xs text-red-600/60 italic">{`"${src.extracted_snippet}"`}</div>
+                            <div style={{ color: "var(--neutral-600)", fontStyle: "italic", marginTop: "0.125rem" }}>{`"${src.extracted_snippet}"`}</div>
                           )}
-                          <div className="text-xs text-zinc-700 mt-0.5">via {src.extraction_agent}</div>
+                          <div style={{ color: "var(--neutral-400)", fontSize: "0.6875rem", marginTop: "0.125rem" }}>via {src.extraction_agent}</div>
                         </div>
                       </div>
                     ))}
@@ -170,7 +164,6 @@ function FieldCard({ field }: { field: ProductField }) {
     </div>
   );
 }
-
 
 export default function ProductPage() {
   const { productId } = useParams<{ productId: string }>();
@@ -188,7 +181,6 @@ export default function ProductPage() {
       }
     };
     load();
-    // Poll every 3s while processing
     const interval = setInterval(async () => {
       const p = await getProduct(productId).catch(() => null);
       if (p) {
@@ -201,19 +193,15 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex gap-1">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className="w-2 h-2 rounded-full bg-zinc-600 stream-dot" style={{ animationDelay: `${i * 0.2}s` }} />
-          ))}
-        </div>
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--neutral-400)" }}>
+        Loading product details...
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] text-zinc-500">
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--neutral-400)" }}>
         Product not found.
       </div>
     );
@@ -226,94 +214,125 @@ export default function ProductPage() {
     : 0;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12">
-      {/* Header */}
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-2">
-          <span className={`text-xs font-mono px-2 py-0.5 rounded-full border ${
-            product.status === "complete" ? "conf-high" :
-            product.status === "pending_review" ? "border-amber-500/30 text-amber-400 bg-amber-500/10" :
-            "border-zinc-700 text-zinc-400"
-          }`}>
-            {product.status.replace("_", " ")}
-          </span>
-          {product.category && (
-            <span className="text-xs text-zinc-500 font-mono">{product.category}</span>
-          )}
-        </div>
-        <h1 className="text-3xl font-bold text-zinc-100 mb-1">{product.name}</h1>
-        <p className="text-xs text-zinc-600 font-mono">{product.id}</p>
-      </div>
+    <div style={{ minHeight: "100vh", background: "var(--neutral-50)", padding: "3rem 1.5rem 5rem" }}>
+      <div style={{ maxWidth: "64rem", margin: "0 auto" }}>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4 mb-10">
-        {[
-          { label: "Total Fields", value: product.fields.length },
-          { label: "Verified (≥2 sources)", value: verified.length },
-          { label: "Avg Confidence", value: `${(avgConf * 100).toFixed(0)}%` },
-        ].map((stat) => (
-          <div key={stat.label} className="glass rounded-xl p-4 text-center">
-            <div className="text-2xl font-bold text-zinc-100 font-mono">{stat.value}</div>
-            <div className="text-xs text-zinc-500 mt-1">{stat.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Fields grid */}
-      {product.fields.length === 0 ? (
-        <div className="glass rounded-xl p-12 text-center text-zinc-600">
-          {product.status === "processing" ? (
-            <span className="flex flex-col items-center gap-3">
-              <span className="flex gap-1">
-                {[0, 1, 2].map((i) => (
-                  <span key={i} className="w-2 h-2 rounded-full bg-zinc-600 stream-dot" />
-                ))}
-              </span>
-              Pipeline still running — fields will appear here shortly.
-            </span>
-          ) : (
-            "No fields extracted."
-          )}
+        {/* Back navigation link */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          <Link href="/" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--neutral-500)", textDecoration: "none" }}>
+            ← Back to Main Dashboard
+          </Link>
         </div>
-      ) : (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-zinc-300">
-              Extracted Fields
-            </h2>
-            <p className="text-xs text-zinc-600">
-              Click a confidence badge to see sources
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {product.fields.map((f) => (
-              <FieldCard key={f.id} field={f} />
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* HITL prompt */}
-      {review.length > 0 && (
-        <div className="mt-8 glass rounded-xl p-5 border border-amber-500/20">
-          <div className="flex items-center justify-between">
+        {/* Product header card */}
+        <div style={{ background: "var(--white)", border: "1px solid var(--neutral-200)", borderTop: "4px solid var(--red)", borderRadius: "1rem", padding: "1.75rem", boxShadow: "var(--shadow-sm)", marginBottom: "2rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
             <div>
-              <div className="text-sm font-semibold text-amber-400 mb-0.5">
-                {review.length} field{review.length !== 1 ? "s" : ""} need human review
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                <span style={{
+                  fontSize: "0.6875rem",
+                  fontWeight: 700,
+                  padding: "0.25rem 0.625rem",
+                  borderRadius: "9999px",
+                  textTransform: "uppercase",
+                  background: product.status === "complete" ? "#DCFCE7" : product.status === "pending_review" ? "var(--red-light)" : "#FEF9C3",
+                  color: product.status === "complete" ? "#15803D" : product.status === "pending_review" ? "var(--red)" : "#A16207",
+                  border: `1px solid ${product.status === "complete" ? "#BBF7D0" : product.status === "pending_review" ? "rgba(200,16,46,0.3)" : "#FDE68A"}`
+                }}>
+                  {product.status.replace("_", " ")}
+                </span>
+                {product.category && (
+                  <span style={{ fontSize: "0.75rem", color: "var(--neutral-500)", fontWeight: 600 }}>{product.category}</span>
+                )}
               </div>
-              <div className="text-xs text-zinc-500">
-                Low-confidence fields are in the review queue — accept, edit, or reject with context.
+
+              <h1 style={{ fontSize: "2rem", fontWeight: 900, color: "var(--neutral-900)", letterSpacing: "-0.025em" }}>
+                {product.name}
+              </h1>
+              <p style={{ fontSize: "0.75rem", color: "var(--neutral-400)", fontFamily: "var(--font-mono)", marginTop: "0.25rem" }}>
+                ID: {product.id}
+              </p>
+            </div>
+
+            <Link
+              href="/analyze"
+              className="submit-btn"
+              style={{ width: "auto", padding: "0.625rem 1.25rem", fontSize: "0.8125rem" }}
+            >
+              + Analyze Another
+            </Link>
+          </div>
+
+          {/* Stats strip */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--neutral-100)" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--neutral-900)", fontFamily: "var(--font-mono)" }}>
+                {product.fields.length}
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "var(--neutral-500)", fontWeight: 600, marginTop: "0.125rem" }}>Total Fields</div>
+            </div>
+
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#16A34A", fontFamily: "var(--font-mono)" }}>
+                {verified.length}
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "var(--neutral-500)", fontWeight: 600, marginTop: "0.125rem" }}>Verified (≥2 sources)</div>
+            </div>
+
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--red)", fontFamily: "var(--font-mono)" }}>
+                {(avgConf * 100).toFixed(0)}%
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "var(--neutral-500)", fontWeight: 600, marginTop: "0.125rem" }}>Avg Confidence</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Fields grid */}
+        {product.fields.length === 0 ? (
+          <div style={{ background: "var(--white)", border: "1px solid var(--neutral-200)", borderRadius: "1rem", padding: "3.5rem 1.5rem", textAlign: "center", color: "var(--neutral-500)" }}>
+            {product.status === "processing" ? "Pipeline still running — fields will appear here shortly." : "No fields extracted."}
+          </div>
+        ) : (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <h2 style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--neutral-900)" }}>
+                Extracted Fields ({product.fields.length})
+              </h2>
+              <span style={{ fontSize: "0.75rem", color: "var(--neutral-400)", fontWeight: 600 }}>
+                Click confidence badge to view source evidence
+              </span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem" }}>
+              {product.fields.map((f) => (
+                <FieldCard key={f.id} field={f} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Human review prompt card */}
+        {review.length > 0 && (
+          <div style={{ marginTop: "2.5rem", background: "var(--red-light)", border: "1px solid rgba(200,16,46,0.3)", borderLeft: "4px solid var(--red)", borderRadius: "0.75rem", padding: "1.25rem 1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+            <div>
+              <div style={{ fontSize: "0.875rem", fontWeight: 800, color: "var(--red-dark)" }}>
+                {review.length} field{review.length !== 1 ? "s" : ""} flagged for human review
+              </div>
+              <div style={{ fontSize: "0.8125rem", color: "var(--neutral-700)", marginTop: "0.125rem" }}>
+                Low confidence or single-source fields are in the review queue ready for manual approval or correction.
               </div>
             </div>
-            <a
+            <Link
               href="/review"
-              className="text-sm font-medium bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500/25 rounded-lg px-4 py-2 transition-colors flex-shrink-0"
+              style={{ background: "var(--red)", color: "white", padding: "0.625rem 1.25rem", borderRadius: "0.5rem", fontSize: "0.8125rem", fontWeight: 700, textDecoration: "none" }}
             >
-              Go to Review →
-            </a>
+              Go to Review Queue →
+            </Link>
           </div>
-        </div>
-      )}
+        )}
+
+      </div>
     </div>
   );
 }

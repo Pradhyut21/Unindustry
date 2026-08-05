@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   listReviewQueue,
   submitReviewAction,
@@ -15,16 +16,10 @@ const SOURCE_ICONS: Record<string, string> = {
   human: "✋",
 };
 
-function confidenceClass(c: number): string {
-  if (c >= 0.8) return "conf-high";
-  if (c >= 0.6) return "conf-medium";
-  return "conf-low";
-}
-
 export default function ReviewPage() {
   const [items, setItems] = useState<ReviewQueueItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reviewer, setReviewer] = useState("reviewer");
+  const [reviewer, setReviewer] = useState("Reviewer 1");
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [actioning, setActioning] = useState<string | null>(null);
 
@@ -53,146 +48,204 @@ export default function ReviewPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12">
-      <div className="mb-10">
-        <div className="flex items-center justify-between">
+    <div style={{ minHeight: "100vh", background: "var(--neutral-50)", padding: "3rem 1.5rem 5rem" }}>
+      <div style={{ maxWidth: "64rem", margin: "0 auto" }}>
+
+        {/* Back link */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          <Link href="/" style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--neutral-500)", textDecoration: "none" }}>
+            ← Back to Main Dashboard
+          </Link>
+        </div>
+
+        {/* Page Header */}
+        <div style={{ background: "var(--white)", border: "1px solid var(--neutral-200)", borderTop: "4px solid var(--red)", borderRadius: "1rem", padding: "1.75rem", boxShadow: "var(--shadow-sm)", marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
           <div>
-            <h1 className="text-3xl font-bold text-zinc-100 mb-1">Human Review Queue</h1>
-            <p className="text-sm text-zinc-500">
-              Low-confidence fields that need a reviewer before going live.
-              All corrections are logged as knowledge graph sources.
+            <div style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--red)", marginBottom: "0.25rem" }}>
+              Human-in-the-Loop Audit Queue
+            </div>
+            <h1 style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--neutral-900)", letterSpacing: "-0.025em" }}>
+              Review Queue ({items.length})
+            </h1>
+            <p style={{ fontSize: "0.8125rem", color: "var(--neutral-500)", marginTop: "0.25rem" }}>
+              Low-confidence & contradicted fields flagged by VerifierAgent before going live.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-zinc-500 font-mono">Reviewer:</label>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", background: "var(--neutral-50)", border: "1px solid var(--neutral-200)", padding: "0.5rem 0.875rem", borderRadius: "0.625rem" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--neutral-600)" }}>Reviewer:</label>
             <input
               id="reviewer-name"
               type="text"
               value={reviewer}
               onChange={(e) => setReviewer(e.target.value)}
-              className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-100 focus:outline-none focus:border-violet-500/60 w-36"
+              style={{ background: "var(--white)", border: "1px solid var(--neutral-300)", borderRadius: "0.375rem", padding: "0.25rem 0.625rem", fontSize: "0.8125rem", fontWeight: 600, color: "var(--neutral-900)", width: "120px", outline: "none" }}
             />
           </div>
         </div>
-      </div>
 
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="flex gap-1">
-            {[0, 1, 2].map((i) => (
-              <span key={i} className="w-2 h-2 rounded-full bg-zinc-600 stream-dot" />
-            ))}
+        {/* Queue Items */}
+        {loading ? (
+          <div style={{ padding: "4rem", textAlign: "center", color: "var(--neutral-400)", fontSize: "0.875rem" }}>
+            Loading review items from database...
           </div>
-        </div>
-      ) : items.length === 0 ? (
-        <div className="glass rounded-xl p-16 text-center">
-          <div className="text-4xl mb-4">✓</div>
-          <div className="text-lg font-semibold text-emerald-400 mb-2">Queue is clear</div>
-          <div className="text-sm text-zinc-500">
-            All fields have been reviewed or passed automatic verification.
+        ) : items.length === 0 ? (
+          <div style={{ background: "var(--white)", border: "1px solid var(--neutral-200)", borderRadius: "1rem", padding: "4rem 1.5rem", textAlign: "center" }}>
+            <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>🛡️</div>
+            <div style={{ fontSize: "1.125rem", fontWeight: 800, color: "#15803D", marginBottom: "0.25rem" }}>
+              Review Queue Clear!
+            </div>
+            <p style={{ fontSize: "0.8125rem", color: "var(--neutral-500)", maxWidth: "24rem", margin: "0 auto" }}>
+              All fields have passed automatic 2-source verification or have already been reviewed.
+            </p>
           </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="text-xs text-zinc-500 font-mono mb-2">
-            {items.length} item{items.length !== 1 ? "s" : ""} pending review
-          </div>
-          {items.map((item) => {
-            const f = item.field;
-            return (
-              <div key={item.id} className="glass rounded-xl overflow-hidden border border-amber-500/10">
-                {/* Field header */}
-                <div className="p-5 border-b border-zinc-800/40">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-mono text-zinc-500 uppercase tracking-wide">
-                          {f.field_name.replace(/_/g, " ")}
-                        </span>
-                        <span className={`border rounded px-1.5 py-0.5 text-xs font-mono ${confidenceClass(f.confidence)}`}>
-                          {(f.confidence * 100).toFixed(0)}% confidence
-                        </span>
-                        {f.uncertainty_reason !== "none" && (
-                          <span className="text-xs text-amber-400/70 font-mono">
-                            · {f.uncertainty_reason.replace(/_/g, " ")}
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            {items.map((item) => {
+              const f = item.field;
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    background: "var(--white)",
+                    border: "1px solid var(--neutral-200)",
+                    borderLeft: "4px solid var(--red)",
+                    borderRadius: "0.875rem",
+                    overflow: "hidden",
+                    boxShadow: "var(--shadow-sm)",
+                  }}
+                >
+                  {/* Card Header */}
+                  <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--neutral-100)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.375rem" }}>
+                          <span style={{ fontSize: "0.6875rem", fontWeight: 700, fontFamily: "var(--font-mono)", textTransform: "uppercase", color: "var(--neutral-400)" }}>
+                            {f.field_name.replace(/_/g, " ")}
                           </span>
-                        )}
-                      </div>
-                      <div className="text-lg font-semibold text-zinc-100">
-                        {f.value || <span className="text-zinc-600 italic text-base">No value extracted</span>}
+                          <span className={`conf-badge ${f.confidence >= 0.8 ? "high" : f.confidence >= 0.6 ? "medium" : "low"}`}>
+                            {(f.confidence * 100).toFixed(0)}% Confidence
+                          </span>
+                          {f.uncertainty_reason !== "none" && (
+                            <span style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--red)", background: "var(--red-light)", padding: "0.125rem 0.375rem", borderRadius: "0.25rem", fontFamily: "var(--font-mono)" }}>
+                              {f.uncertainty_reason.replace(/_/g, " ")}
+                            </span>
+                          )}
+                        </div>
+
+                        <div style={{ fontSize: "1.125rem", fontWeight: 800, color: "var(--neutral-900)" }}>
+                          {f.value || <span style={{ color: "var(--neutral-400)", fontStyle: "italic", fontWeight: 400 }}>No value extracted</span>}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Sources */}
-                <div className="px-5 py-4 bg-zinc-900/40 border-b border-zinc-800/40">
-                  <div className="text-xs font-mono text-zinc-500 mb-2">Evidence</div>
-                  {f.sources.length === 0 ? (
-                    <p className="text-xs text-zinc-600">No sources available.</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {f.sources.map((src) => (
-                        <div key={src.id} className="flex gap-3 text-xs">
-                          <span>{SOURCE_ICONS[src.source_type] || "?"}</span>
-                          <div>
-                            <span className="text-zinc-400 font-mono">{src.source_ref}</span>
+                  {/* Source Evidence */}
+                  <div style={{ background: "var(--neutral-50)", padding: "1rem 1.5rem", borderBottom: "1px solid var(--neutral-100)" }}>
+                    <div style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", color: "var(--neutral-400)", fontFamily: "var(--font-mono)", marginBottom: "0.5rem" }}>
+                      Extracted Evidence & Citations
+                    </div>
+                    {f.sources.length === 0 ? (
+                      <p style={{ fontSize: "0.75rem", color: "var(--neutral-400)" }}>No source citations logged.</p>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
+                        {f.sources.map((src) => (
+                          <div key={src.id} style={{ display: "flex", gap: "0.5rem", fontSize: "0.75rem", alignItems: "center" }}>
+                            <span>{SOURCE_ICONS[src.source_type] || "📄"}</span>
+                            <span style={{ fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--neutral-800)" }}>{src.source_ref}</span>
                             {src.extracted_snippet && (
-                              <span className="text-zinc-600 ml-2 italic">
-                                {`"${src.extracted_snippet.slice(0, 100)}"`}
+                              <span style={{ color: "var(--neutral-500)", fontStyle: "italic" }}>
+                                {`"${src.extracted_snippet.slice(0, 120)}"`}
                               </span>
                             )}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                {/* Actions */}
-                <div className="p-5">
-                  <div className="flex items-center gap-3 flex-wrap">
+                  {/* Actions */}
+                  <div style={{ padding: "1.25rem 1.5rem", display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
                     <input
                       id={`edit-${item.id}`}
                       type="text"
-                      placeholder="Corrected value (for Edit)..."
+                      placeholder="Enter corrected value to edit..."
                       value={editValues[item.id] || ""}
                       onChange={(e) =>
                         setEditValues((prev) => ({ ...prev, [item.id]: e.target.value }))
                       }
-                      className="flex-1 min-w-48 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-violet-500/60"
+                      style={{
+                        flex: "1 1 200px",
+                        padding: "0.5rem 0.875rem",
+                        fontSize: "0.8125rem",
+                        border: "1px solid var(--neutral-300)",
+                        borderRadius: "0.5rem",
+                        outline: "none",
+                      }}
                     />
+
                     <button
                       id={`accept-${item.id}`}
                       onClick={() => handleAction(item.id, "accepted")}
                       disabled={actioning === item.id}
-                      className="text-sm font-medium bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
+                      style={{
+                        background: "#DCFCE7",
+                        color: "#15803D",
+                        border: "1px solid #BBF7D0",
+                        borderRadius: "0.5rem",
+                        padding: "0.5rem 1rem",
+                        fontSize: "0.8125rem",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
                     >
-                      Accept
+                      ✓ Accept
                     </button>
+
                     <button
                       id={`edit-btn-${item.id}`}
                       onClick={() => handleAction(item.id, "edited")}
                       disabled={actioning === item.id || !editValues[item.id]}
-                      className="text-sm font-medium bg-violet-500/15 border border-violet-500/30 text-violet-400 hover:bg-violet-500/25 rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
+                      style={{
+                        background: "var(--neutral-900)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "0.5rem",
+                        padding: "0.5rem 1rem",
+                        fontSize: "0.8125rem",
+                        fontWeight: 700,
+                        cursor: actioning === item.id || !editValues[item.id] ? "not-allowed" : "pointer",
+                        opacity: actioning === item.id || !editValues[item.id] ? 0.5 : 1,
+                      }}
                     >
-                      Edit & Accept
+                      ✏ Edit & Accept
                     </button>
+
                     <button
                       id={`reject-${item.id}`}
                       onClick={() => handleAction(item.id, "rejected")}
                       disabled={actioning === item.id}
-                      className="text-sm font-medium bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
+                      style={{
+                        background: "var(--red-light)",
+                        color: "var(--red)",
+                        border: "1px solid rgba(200,16,46,0.3)",
+                        borderRadius: "0.5rem",
+                        padding: "0.5rem 1rem",
+                        fontSize: "0.8125rem",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
                     >
-                      Reject
+                      ✕ Reject
                     </button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

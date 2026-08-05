@@ -131,22 +131,84 @@ export function createPipelineStream(
   onEvent: (event: AgentEvent) => void,
   onComplete: () => void,
   onError: (error: Event) => void
-): EventSource {
-  const es = new EventSource(`${API_BASE}/api/v1/stream/${productId}`);
-  es.onmessage = (e) => {
-    try {
-      const data: AgentEvent = JSON.parse(e.data);
-      if (data.event_type === "ping") return;
-      onEvent(data);
-      if (data.event_type === "pipeline_complete" || data.event_type === "pipeline_error") {
-        es.close();
-        onComplete();
+): { close: () => void } {
+  let es: EventSource | null = null;
+  let closed = false;
+  let retries = 0;
+  let pollInterval: ReturnType<typeof setInterval> | null = null;
+  const MAX_RETRIES = 10;
+
+  function startPollingFallback() {
+    if (pollInterval || closed) return;
+    pollInterval = setInterval(async () => {
+      try {
+        const product = await getProduct(productId);
+        if (
+          product.status === "complete" ||
+          product.status === "pending_review" ||
+          product.status === "failed"
+        ) {
+          if (pollInterval) clearInterval(pollInterval);
+          if (!closed) {
+            closed = true;
+            onEvent({
+              event_type: "pipeline_complete",
+              agent_name: "orchestrator",
+              message: `Pipeline complete. ${product.fields.length} fields extracted.`,
+              total_count: product.fields.length,
+              hitl_count: product.fields.filter((f) => f.confidence < 0.7).length,
+              status: product.status,
+            });
+            onComplete();
+          }
+        }
+      } catch { /* ignore poll errors */ }
+    }, 2000);
+  }
+
+  function connect() {
+    if (closed) return;
+    es = new EventSource(`${API_BASE}/api/v1/stream/${productId}`);
+
+    es.onmessage = (e) => {
+      retries = 0;
+      try {
+        const data: AgentEvent = JSON.parse(e.data);
+        if (data.event_type === "ping") return;
+        onEvent(data);
+        if (data.event_type === "pipeline_complete" || data.event_type === "pipeline_error") {
+          closed = true;
+          if (pollInterval) clearInterval(pollInterval);
+          es?.close();
+          onComplete();
+        }
+      } catch { /* ignore parse errors */ }
+    };
+
+    es.onerror = () => {
+      es?.close();
+      if (closed) return;
+      retries++;
+      if (retries <= MAX_RETRIES) {
+        const delay = Math.min(1000 * Math.pow(2, retries - 1), 10000);
+        setTimeout(connect, delay);
+      } else {
+        startPollingFallback();
       }
-    } catch {}
+    };
+  }
+
+  // Safety net: if SSE never delivers pipeline_complete, start polling after 90s
+  const safetyTimer = setTimeout(startPollingFallback, 90000);
+
+  connect();
+
+  return {
+    close: () => {
+      closed = true;
+      clearTimeout(safetyTimer);
+      if (pollInterval) clearInterval(pollInterval);
+      es?.close();
+    },
   };
-  es.onerror = (e) => {
-    onError(e);
-    es.close();
-  };
-  return es;
 }

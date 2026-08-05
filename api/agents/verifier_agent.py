@@ -296,7 +296,7 @@ class VerifierAgent(BaseAgent):
         await self.emit_event(
             product_id,
             "agent_complete",
-            f"Verified {verified}/{len(results)} fields at ≥{min_sources} sources.",
+            f"Verified {verified}/{len(results)} fields at >={min_sources} sources.",
             data={"verified_count": verified, "total_count": len(results)},
         )
 

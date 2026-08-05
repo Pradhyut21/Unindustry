@@ -4,7 +4,15 @@ ProductTruth API — FastAPI application entry point.
 
 from __future__ import annotations
 
+import io
 import logging
+import sys
+
+# Force UTF-8 output on Windows (default is cp1252, which can't encode ≥, →, —)
+# This prevents UnicodeEncodeError from crashing background pipeline tasks.
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 import structlog
 from fastapi import FastAPI
