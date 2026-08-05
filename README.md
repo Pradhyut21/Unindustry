@@ -18,7 +18,7 @@
 
 | What | Result |
 |------|--------|
-| Run a real demo | `docker compose up` → open localhost:3000 → click **▶ Run live demo (no setup needed)** |
+| Live Production App | 🌐 [producttruth.vercel.app](https://producttruth.vercel.app) (or `docker compose up` → click **▶ Run live demo**) |
 | What's novel | `SOURCE_CONTRADICTION` — system shows BOTH conflicting values instead of silently picking one |
 | Benchmark Eval | **85.2%** accuracy on 27-field benchmark (`python -m scripts.eval`) |
 | Real-World Eval | **87.5%** accuracy on real manufacturer PDFs (`python -m scripts.eval_real`) |
@@ -119,8 +119,8 @@ Open [http://localhost:3000](http://localhost:3000) — upload `api/fixtures/sam
 
 ## Live Demo
 
-> 🚀 **Run locally in under 5 minutes** with the Quickstart above — no cloud account needed beyond a free Groq key.
-> Upload the included `api/fixtures/sample_siemens_3rt2015_datasheet.pdf` to see contradiction detection, confidence scoring, and human-review routing on a real industrial datasheet.
+> 🌐 **Live Web App**: [https://producttruth.vercel.app](https://producttruth.vercel.app)
+> 🚀 **Zero-Config Run**: Click **▶ Run live demo (no setup needed)** on the landing page to trigger the bundled Siemens 3RT2015 contactor datasheet enrichment pipeline — live contradiction detection, confidence calibration chart, SSE agent animation, and citation drawer in under 30 seconds.
 
 ## Results
 
