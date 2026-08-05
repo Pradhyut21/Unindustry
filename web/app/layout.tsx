@@ -30,9 +30,6 @@ export default function RootLayout({
               <span className="font-semibold text-zinc-100 group-hover:text-white transition-colors">
                 ProductTruth
               </span>
-              <span className="text-xs text-zinc-500 border border-zinc-700 rounded px-1.5 py-0.5 font-mono">
-                v0.1
-              </span>
             </Link>
             <div className="flex items-center gap-6 text-sm">
               <Link

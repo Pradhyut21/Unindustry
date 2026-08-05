@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createPipelineStream, AgentEvent } from "@/lib/api";
 
@@ -24,6 +24,19 @@ export default function PipelinePage() {
   const [complete, setComplete] = useState(false);
   const [hitlCount, setHitlCount] = useState(0);
   const [totalFields, setTotalFields] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const startTimeRef = useRef<number>(Date.now());
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+    timerRef.current = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+    }, 1000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!productId) return;
@@ -43,14 +56,23 @@ export default function PipelinePage() {
           setHitlCount(event.hitl_count || 0);
           setTotalFields(event.total_count || 0);
           setComplete(true);
+          if (timerRef.current) clearInterval(timerRef.current);
         }
       },
-      () => setComplete(true),
+      () => {
+        setComplete(true);
+        if (timerRef.current) clearInterval(timerRef.current);
+      },
       () => {}
     );
 
     return () => es.close();
   }, [productId]);
+
+  const completedCount = Object.values(agentStatuses).filter(
+    (s) => s === "complete" || s === "error"
+  ).length;
+  const progressPct = Math.round((completedCount / AGENTS.length) * 100);
 
   const statusColor = (s: AgentStatus) => {
     if (s === "active") return "border-violet-500 bg-violet-500/10 agent-active";
@@ -69,19 +91,41 @@ export default function PipelinePage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
       <div className="mb-10">
-        <div className="flex items-center gap-3 mb-3">
-          {!complete ? (
-            <span className="flex gap-1 items-center text-violet-400 text-sm font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 stream-dot" />
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 stream-dot" />
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 stream-dot" />
-              Pipeline running...
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-3">
+            {!complete ? (
+              <span className="flex gap-1 items-center text-violet-400 text-sm font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 stream-dot" />
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 stream-dot" />
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 stream-dot" />
+                Pipeline running...
+              </span>
+            ) : (
+              <span className="text-emerald-400 text-sm font-mono flex items-center gap-1.5">
+                ✓ Pipeline complete
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-4 text-xs font-mono text-zinc-500">
+            <span className="tabular-nums">
+              {String(Math.floor(elapsed / 60)).padStart(2, "0")}:{String(elapsed % 60).padStart(2, "0")}
             </span>
-          ) : (
-            <span className="text-emerald-400 text-sm font-mono flex items-center gap-1.5">
-              ✓ Pipeline complete
-            </span>
-          )}
+            {!complete && (
+              <span className="text-violet-400">{progressPct}%</span>
+            )}
+          </div>
+        </div>
+        {/* Progress bar */}
+        <div className="h-1 w-full bg-zinc-800 rounded-full mb-3 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${complete ? 100 : progressPct}%`,
+              background: complete
+                ? "linear-gradient(to right, #10b981, #34d399)"
+                : "linear-gradient(to right, #7c3aed, #06b6d4)",
+            }}
+          />
         </div>
         <h1 className="text-3xl font-bold text-zinc-100">Extracting Product Data</h1>
         <p className="text-zinc-500 mt-1 text-sm font-mono">{productId}</p>

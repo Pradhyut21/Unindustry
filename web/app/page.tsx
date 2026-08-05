@@ -4,6 +4,13 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createProduct, triggerPipeline } from "@/lib/api";
 
+const METRICS = [
+  { value: "85.2%", label: "Field Accuracy", sub: "on 27 labeled fields" },
+  { value: "100%", label: "HITL Precision", sub: "every wrong field flagged" },
+  { value: "+0.45", label: "Calibration Gap", sub: "lower conf when wrong" },
+  { value: "7", label: "AI Agents", sub: "parallel extraction" },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const [productName, setProductName] = useState("");
@@ -40,17 +47,21 @@ export default function HomePage() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
       {/* Hero */}
-      <section className="flex-1 flex flex-col items-center justify-center px-6 py-20">
-        {/* Gradient orbs */}
-        <div className="absolute top-32 left-1/4 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-40 right-1/4 w-80 h-80 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+      <section className="flex-1 flex flex-col items-center justify-center px-6 py-16">
+        {/* Background orbs */}
+        <div className="absolute top-28 left-1/4 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-36 right-1/4 w-96 h-96 bg-cyan-600/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-indigo-600/6 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 text-xs font-mono text-violet-400 border border-violet-500/30 rounded-full px-3 py-1 mb-6 bg-violet-500/10">
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-            AI-powered · Provenance-verified · Commerce-ready
-          </div>
-          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight mb-6">
+        {/* Badge */}
+        <div className="relative z-10 inline-flex items-center gap-2 text-xs font-mono text-violet-400 border border-violet-500/30 rounded-full px-4 py-1.5 mb-8 bg-violet-500/10 backdrop-blur-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+          AI-powered · Provenance-verified · Commerce-ready
+        </div>
+
+        {/* Headline */}
+        <div className="relative z-10 text-center max-w-3xl mx-auto mb-10">
+          <h1 className="text-5xl sm:text-6xl font-bold tracking-tight mb-5 leading-tight">
             <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
               Every field.
             </span>{" "}
@@ -58,7 +69,7 @@ export default function HomePage() {
               Every source.
             </span>
           </h1>
-          <p className="text-lg text-zinc-400 leading-relaxed">
+          <p className="text-lg text-zinc-400 leading-relaxed max-w-2xl mx-auto">
             Give ProductTruth a product name, a spec sheet, or a photo — and get a
             structured, commerce-ready record where every field is confidence-scored
             and traceable to its source. Low-confidence fields go to a human reviewer.
@@ -69,7 +80,7 @@ export default function HomePage() {
         {/* Input card */}
         <form
           onSubmit={handleSubmit}
-          className="relative z-10 w-full max-w-2xl glass rounded-2xl p-8 shadow-2xl"
+          className="relative z-10 w-full max-w-2xl glass rounded-2xl p-8 shadow-2xl shadow-violet-500/5"
         >
           <div className="space-y-5">
             {/* Product name */}
@@ -183,21 +194,83 @@ export default function HomePage() {
           </div>
         </form>
 
-        {/* How it works */}
-        <div className="relative z-10 mt-16 grid grid-cols-3 gap-6 max-w-2xl w-full text-center">
+        {/* Feature cards */}
+        <div className="relative z-10 mt-10 grid grid-cols-3 gap-4 max-w-2xl w-full text-center">
           {[
-            { icon: "⚡", title: "7 AI Agents", desc: "Extract from PDF, images, and the web in parallel" },
-            { icon: "🔍", title: "2-Source Minimum", desc: "Every field verified against ≥2 independent sources" },
-            { icon: "✋", title: "Human Review", desc: "Low-confidence fields routed to a reviewer, not shipped wrong" },
+            {
+              icon: "⚡",
+              title: "7 AI Agents",
+              desc: "Doc-Intel, Vision, Retrieval, Verifier, Schema Mapper, HITL Router run in parallel",
+            },
+            {
+              icon: "🔍",
+              title: "2-Source Minimum",
+              desc: "Every field requires ≥2 independent sources to agree before it's marked verified",
+            },
+            {
+              icon: "✋",
+              title: "Human Review",
+              desc: "Low-confidence and contradicted fields go to a reviewer — not shipped silently wrong",
+            },
           ].map((item) => (
-            <div key={item.title} className="glass rounded-xl p-5">
+            <div key={item.title} className="glass rounded-xl p-5 hover:border-zinc-600/60 transition-colors">
               <div className="text-2xl mb-2">{item.icon}</div>
               <div className="text-sm font-semibold text-zinc-200 mb-1">{item.title}</div>
-              <div className="text-xs text-zinc-500">{item.desc}</div>
+              <div className="text-xs text-zinc-500 leading-relaxed">{item.desc}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Eval results strip */}
+      <section className="relative border-t border-zinc-800/60 bg-zinc-950/50 py-12 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-2">
+              Evaluation Results
+            </div>
+            <p className="text-sm text-zinc-500">
+              Tested on 12 synthetic industrial products — 27 labeled fields including 4 adversarial cases designed to produce wrong answers.{" "}
+              <a href="https://github.com/Pradhyut21/Unindustry/blob/main/docs/EVALUATION.md" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 transition-colors">
+                Full methodology →
+              </a>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {METRICS.map((m) => (
+              <div
+                key={m.label}
+                className="glass rounded-xl p-5 text-center border border-zinc-800/40 hover:border-violet-500/20 transition-colors"
+              >
+                <div className="text-3xl font-bold font-mono bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent mb-1">
+                  {m.value}
+                </div>
+                <div className="text-sm font-semibold text-zinc-200 mb-0.5">{m.label}</div>
+                <div className="text-xs text-zinc-600">{m.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Key differentiator callout */}
+          <div className="mt-6 glass rounded-xl p-5 border border-amber-500/15 bg-amber-500/5">
+            <div className="flex items-start gap-3">
+              <span className="text-amber-400 text-lg flex-shrink-0">⚡</span>
+              <div>
+                <div className="text-sm font-semibold text-amber-400 mb-1">
+                  SOURCE_CONTRADICTION Detection
+                </div>
+                <div className="text-xs text-zinc-400 leading-relaxed">
+                  When two sources disagree (e.g. datasheet says 230V, nameplate says 400V), ProductTruth surfaces{" "}
+                  <strong className="text-zinc-200">both values</strong> to a human reviewer rather than silently picking one.
+                  Most AI enrichment tools don't do this — they quietly hallucinate a winner.
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
   );
 }
+

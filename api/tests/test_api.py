@@ -13,7 +13,7 @@ from api.main import app
 
 
 @pytest.fixture
-async def client():
+async def client(db_setup):
     """Async test client that talks to the real FastAPI app."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac

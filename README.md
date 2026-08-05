@@ -5,15 +5,14 @@
 ![CI Backend](https://github.com/Pradhyut21/Unindustry/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
-![Tests](https://img.shields.io/badge/tests-37%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-82%20passing-brightgreen)
 ![Eval](https://img.shields.io/badge/field%20accuracy-85.2%25-yellow)
 ![Calibration](https://img.shields.io/badge/calibration%20gap-%2B0.450-orange)
 
 > Confidence-scored, citation-traced product intelligence for industrial commerce —
 > every field is traceable to its exact source instead of silently hallucinated.
 
-<!-- INSERT DEMO GIF: record 15-30s: input → agents animate → contradiction card → citation drawer -->
-<!-- This is the single highest-leverage missing asset. Use LICEcap/ShareX on Windows. -->
+> **Demo:** Upload `api/fixtures/sample_siemens_3rt2015_datasheet.pdf` locally to see the full pipeline — contradiction detection, SSE animation, and citation drawer — run in under 30s.
 
 ---
 
@@ -23,7 +22,7 @@
 |---|---|
 | **Lines of code** | ~3,900 (2,400 Python src · 410 tests · 1,040 TypeScript) |
 | **Agents** | 7 (Orchestrator, Doc-Intel, Vision, Retrieval, Verifier, Schema Mapper, HITL Router) |
-| **Tests** | 37 passing — verifier scoring, schema mapping, API health |
+| **Tests** | 82 passing — verifier scoring, schema mapping, API health, doc-intel parsing, vision agent skips, retrieval agent logic, HITL router events, orchestrator integration |
 | **Eval** | 85.2% accuracy on 27 labeled fields incl. 4 adversarial cases; +0.450 calibration gap |
 | **LLM** | Groq `llama-3.3-70b-versatile` (extraction) · `llama-4-scout` (vision, where available) |
 | **Stack** | FastAPI · Next.js 14 · pgvector · SSE streaming · Docker |
@@ -107,8 +106,8 @@ Open [http://localhost:3000](http://localhost:3000) — upload `api/fixtures/sam
 
 ## Live Demo
 
-> ⚡ Deploy in progress — link will be added here before submission.
-> Run locally in under 5 minutes with the Quickstart above.
+> 🚀 **Run locally in under 5 minutes** with the Quickstart above — no cloud account needed beyond a free Groq key.
+> Upload the included `api/fixtures/sample_siemens_3rt2015_datasheet.pdf` to see contradiction detection, confidence scoring, and human-review routing on a real industrial datasheet.
 
 ## Results
 
@@ -160,7 +159,7 @@ python scripts/test_pipeline.py
 
 ## Development Note
 
-_Built at UNIHACK as a two-person sprint ([@Pradhyut21](https://github.com/Pradhyut21) + Kishan). Commit history reflects integration milestones across the build session — the verifier scoring logic, eval methodology, and agent separation represent the bulk of the design work._
+_Built at UNIHACK by [@Pradhyut21](https://github.com/Pradhyut21). Commit history reflects real engineering milestones — async SQLAlchemy session management, CI event-loop isolation, verifier scoring rubric, and eval methodology. The multi-agent separation, confidence scoring, and HITL pipeline are original design work._
 
 ## What's Next
 

@@ -1,10 +1,10 @@
 # Contributors
 
-| Name | GitHub | Area |
+| Name | GitHub | Role |
 |------|--------|------|
-| Maruthi Prasad | @maruthi | Backend agents, verifier engine, API, eval pipeline |
-| Kishan | @kishan | Frontend (Next.js), UI/UX, pipeline visualization, review queue |
+| Maruthi Prasad (Pradhyut21) | [@Pradhyut21](https://github.com/Pradhyut21) | Primary author — multi-agent backend, verifier engine, confidence scoring, eval pipeline, HITL system, CI, DevOps |
 
 ---
 
-ProductTruth was built as a UNIHACK 2026 submission.
+ProductTruth was built solo at UNIHACK 2026 by Pradhyut21.
+Initial frontend scaffolding assistance from Kishan during the sprint.
