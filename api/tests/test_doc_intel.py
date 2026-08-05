@@ -18,7 +18,6 @@ from api.agents.doc_intel_agent import (
     _parse_value_from_line,
 )
 
-
 # ---------------------------------------------------------------------------
 # Unit tests: _parse_value_from_line (pure function)
 # ---------------------------------------------------------------------------

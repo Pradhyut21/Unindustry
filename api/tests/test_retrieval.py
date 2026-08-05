@@ -17,7 +17,6 @@ import pytest
 from api.agents.retrieval_agent import RetrievalAgent, _extract_value_from_snippet
 from api.models.db import SourceType
 
-
 # ---------------------------------------------------------------------------
 # Unit tests: _extract_value_from_snippet (pure function)
 # ---------------------------------------------------------------------------
@@ -85,7 +84,6 @@ class TestRetrievalAgentRun:
     @pytest.mark.asyncio
     async def test_returns_dict_of_candidate_lists(self, monkeypatch):
         """Return type must always be dict[str, list[CandidateValue]]."""
-        from api.agents.retrieval_agent import CATALOG_FIXTURES_DIR
 
         async def mock_emit(product_id, event_type, message, data=None):
             pass
@@ -123,7 +121,7 @@ class TestRetrievalAgentRun:
         )
 
         assert isinstance(result, dict)
-        for field_name, candidates in result.items():
+        for _field_name, candidates in result.items():
             assert isinstance(candidates, list)
             for c in candidates:
                 assert hasattr(c, "value")

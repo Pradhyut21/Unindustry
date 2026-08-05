@@ -18,7 +18,6 @@ NOTE: These tests require DATABASE_URL to be set (used by the CI Postgres servic
 from __future__ import annotations
 
 import uuid
-from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -153,7 +152,7 @@ class TestOrchestratorEventOrder:
         """Fields below the confidence threshold must appear in the review queue."""
         from api.agents.orchestrator import OrchestratorAgent
         from api.database import AsyncSessionLocal
-        from api.models.db import Product, ProductStatus, ReviewQueueItem, ReviewStatus
+        from api.models.db import Product, ProductStatus
 
         product_id = uuid.uuid4()
         async with AsyncSessionLocal() as db:
@@ -205,7 +204,7 @@ class TestOrchestratorEventOrder:
         assert len(product_after.fields) == 2
 
     @pytest.mark.asyncio
-    async def test_nonexistent_product_does_not_crash(self):
+    async def test_nonexistent_product_does_not_crash(self, db_setup):
         """If product_id doesn't exist, orchestrator logs and returns cleanly."""
         from api.agents.orchestrator import OrchestratorAgent
 
