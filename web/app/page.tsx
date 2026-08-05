@@ -87,6 +87,28 @@ export default function DashboardPage() {
 
           <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
             <button
+              onClick={() => {
+                setAnalyzing(true);
+                fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") + "/api/v1/demo/run", { method: "POST" })
+                  .then((r) => r.json())
+                  .then((data) => router.push(`/pipeline/${data.product_id}`))
+                  .catch((err) => {
+                    setError((err as Error).message);
+                    setAnalyzing(false);
+                  });
+              }}
+              className="submit-btn"
+              style={{
+                padding: "0.625rem 1.25rem",
+                width: "auto",
+                fontSize: "0.8125rem",
+                background: "#16A34A",
+                cursor: "pointer",
+              }}
+            >
+              ▶ Run live demo (no setup needed)
+            </button>
+            <button
               onClick={() => setShowAnalyzeForm(!showAnalyzeForm)}
               className="submit-btn"
               style={{ padding: "0.625rem 1.25rem", width: "auto", fontSize: "0.8125rem" }}

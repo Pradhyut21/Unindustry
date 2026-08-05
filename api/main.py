@@ -20,7 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.config import settings
 from api.database import init_db
-from api.routers import products, review, stream
+from api.routers import demo, products, review, stream
 
 logger = structlog.get_logger(__name__)
 
@@ -73,6 +73,7 @@ async def startup_event() -> None:
 app.include_router(products.router, prefix="/api/v1/products", tags=["products"])
 app.include_router(review.router, prefix="/api/v1/review", tags=["review"])
 app.include_router(stream.router, prefix="/api/v1/stream", tags=["stream"])
+app.include_router(demo.router, prefix="/api/v1/demo", tags=["demo"])
 
 
 # ---------------------------------------------------------------------------

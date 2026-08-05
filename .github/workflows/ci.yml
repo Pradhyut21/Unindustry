@@ -105,3 +105,21 @@ jobs:
         working-directory: web
         env:
           NEXT_PUBLIC_API_URL: "http://localhost:8000"
+
+  # ─── Deployment: Cloud Deploy Stage (Render / Vercel Webhook) ───────────────
+  deploy:
+    name: "Deploy to Production Cloud"
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cloud Deployment Hook
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            curl -X POST "$RENDER_DEPLOY_HOOK"
+            echo "Production deployment webhook triggered successfully."
+          else
+            echo "RENDER_DEPLOY_HOOK secret not set. Skipping production webhook."
+          fi

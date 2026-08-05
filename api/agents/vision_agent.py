@@ -112,8 +112,15 @@ class VisionAgent(BaseAgent):
         field_candidates: dict[str, list[CandidateValue]] = {}
         for img_path in image_paths[:3]:
             if not Path(img_path).exists():
+                logger.warning(f"Vision image path does not exist: {img_path}, using mock fallback")
+                mock_candidates = self._mock_response()
+                for field_name, candidate in mock_candidates:
+                    field_candidates.setdefault(field_name, []).append(candidate)
                 continue
+
             candidates = await self._extract_from_image(img_path)
+            if not candidates:
+                candidates = self._mock_response()
             for field_name, candidate in candidates:
                 field_candidates.setdefault(field_name, []).append(candidate)
 
@@ -124,6 +131,22 @@ class VisionAgent(BaseAgent):
             data={"field_count": len(field_candidates)},
         )
         return field_candidates
+
+    def _mock_response(self) -> list[tuple[str, CandidateValue]]:
+        """Return fallback candidate when visual model or image file is unavailable."""
+        return [
+            (
+                "_vision_status",
+                CandidateValue(
+                    value="unavailable",
+                    source_type=SourceType.IMAGE,
+                    source_ref="vision:mock",
+                    extracted_snippet="Visual extraction fallback — image missing or API unavailable",
+                    extraction_agent="vision_agent:mock",
+                    low_quality=True,
+                ),
+            )
+        ]
 
     async def _extract_from_image(self, img_path: str) -> list[tuple[str, CandidateValue]]:
         """Call Groq vision model on one image (base64-encoded)."""
@@ -195,4 +218,4 @@ class VisionAgent(BaseAgent):
 
         except Exception as exc:
             logger.error("Vision extraction failed", img_path=img_path, error=str(exc))
-            return []
+            return self._mock_response()

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getProduct, Product, ProductField } from "@/lib/api";
+import { ContradictionCard } from "@/components/ContradictionCard";
+import { CalibrationChart, CalibrationPoint } from "@/components/CalibrationChart";
 
 function confidenceClass(c: number): string {
   if (c >= 0.8) return "conf-high";
@@ -96,10 +98,13 @@ function FieldCard({ field }: { field: ProductField }) {
         </div>
 
         {isContradiction && (
-          <div style={{ marginTop: "0.625rem", fontSize: "0.75rem", color: "var(--red)", background: "var(--red-light)", border: "1px solid rgba(200,16,46,0.25)", borderRadius: "0.375rem", padding: "0.375rem 0.625rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.375rem" }}>
-            <span>⚡</span>
-            <span>SOURCE CONTRADICTION — sources disagree on this value. Human review required.</span>
-          </div>
+          <ContradictionCard
+            field={field.field_name}
+            valueA={field.value || "Primary source"}
+            sourceA={confirmingSources[0]?.source_ref || "Datasheet (Doc-Intel)"}
+            valueB={field.contradicting_value || "Secondary source"}
+            sourceB={conflictingSources[0]?.source_ref || "Catalog / RAG"}
+          />
         )}
 
         {!isContradiction && uncertaintyMeta.label && (
@@ -287,6 +292,15 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
+
+        {/* Confidence Calibration Chart */}
+        <CalibrationChart
+          points={product.fields.map((f) => ({
+            confidence: f.confidence,
+            correct: f.verification_status === "verified" ? 1 : 0,
+            field: f.field_name,
+          }))}
+        />
 
         {/* Fields grid */}
         {product.fields.length === 0 ? (

@@ -76,17 +76,17 @@ class TestSpecFieldPatterns:
     def test_all_patterns_are_strings(self):
         for field_name, patterns in SPEC_FIELD_PATTERNS.items():
             for pattern in patterns:
-                assert isinstance(pattern, str), (
-                    f"Pattern in {field_name!r} is not a string: {pattern!r}"
-                )
+                assert isinstance(
+                    pattern, str
+                ), f"Pattern in {field_name!r} is not a string: {pattern!r}"
 
     def test_all_patterns_are_lowercase(self):
         """Patterns must be lowercase for case-insensitive matching to work."""
         for field_name, patterns in SPEC_FIELD_PATTERNS.items():
             for pattern in patterns:
-                assert pattern == pattern.lower(), (
-                    f"Pattern {pattern!r} in {field_name!r} is not lowercase"
-                )
+                assert (
+                    pattern == pattern.lower()
+                ), f"Pattern {pattern!r} in {field_name!r} is not lowercase"
 
     def test_key_fields_are_present(self):
         required = [

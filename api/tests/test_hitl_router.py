@@ -34,7 +34,9 @@ class TestHITLRouterEvents:
         assert len(events) == 1
         assert events[0]["type"] == "agent_complete"
         assert events[0]["data"].get("hitl_count") == 0
-        assert "verified" in events[0]["message"].lower() or "no human" in events[0]["message"].lower()
+        assert (
+            "verified" in events[0]["message"].lower() or "no human" in events[0]["message"].lower()
+        )
 
     @pytest.mark.asyncio
     async def test_nonzero_hitl_count_emits_queue_notification(self):
@@ -77,6 +79,7 @@ class TestHITLRouterEvents:
     @pytest.mark.asyncio
     async def test_run_returns_none(self):
         """HITLRouter.run() must return None — it's a side-effect-only agent."""
+
         async def noop_emit(product_id, event_type, message, data=None):
             pass
 

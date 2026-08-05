@@ -97,18 +97,24 @@ class TestOrchestratorEventOrder:
         events: list[dict] = []
 
         async def capture_emit(self_ref, product_id, event_type, message, data=None):
-            events.append({"type": event_type, "agent": self_ref.name if hasattr(self_ref, "name") else "?"})
+            events.append(
+                {"type": event_type, "agent": self_ref.name if hasattr(self_ref, "name") else "?"}
+            )
 
         # Patch all sub-agents to return known, deterministic outputs
         doc_candidates: dict[str, list[CandidateValue]] = {
             "voltage_rating": [
-                CandidateValue("230V", SourceType.DOC, "test.pdf:page1", "Voltage: 230V", "doc_intel_agent")
+                CandidateValue(
+                    "230V", SourceType.DOC, "test.pdf:page1", "Voltage: 230V", "doc_intel_agent"
+                )
             ]
         }
         vision_candidates: dict[str, list[CandidateValue]] = {}
         retrieval_candidates: dict[str, list[CandidateValue]] = {
             "voltage_rating": [
-                CandidateValue("230V", SourceType.WEB, "catalog:test", "Voltage: 230V", "retrieval_agent")
+                CandidateValue(
+                    "230V", SourceType.WEB, "catalog:test", "Voltage: 230V", "retrieval_agent"
+                )
             ]
         }
 
@@ -117,12 +123,34 @@ class TestOrchestratorEventOrder:
         }
 
         with (
-            patch("api.agents.doc_intel_agent.DocIntelAgent.run", new_callable=AsyncMock, return_value=doc_candidates),
-            patch("api.agents.vision_agent.VisionAgent.run", new_callable=AsyncMock, return_value=vision_candidates),
-            patch("api.agents.retrieval_agent.RetrievalAgent.run", new_callable=AsyncMock, return_value=retrieval_candidates),
-            patch("api.agents.verifier_agent.VerifierAgent.run", new_callable=AsyncMock, return_value=verified_results),
-            patch("api.agents.schema_mapper.SchemaMappingAgent.run", new_callable=AsyncMock, return_value={}),
-            patch("api.agents.hitl_router.HITLRouter.run", new_callable=AsyncMock, return_value=None),
+            patch(
+                "api.agents.doc_intel_agent.DocIntelAgent.run",
+                new_callable=AsyncMock,
+                return_value=doc_candidates,
+            ),
+            patch(
+                "api.agents.vision_agent.VisionAgent.run",
+                new_callable=AsyncMock,
+                return_value=vision_candidates,
+            ),
+            patch(
+                "api.agents.retrieval_agent.RetrievalAgent.run",
+                new_callable=AsyncMock,
+                return_value=retrieval_candidates,
+            ),
+            patch(
+                "api.agents.verifier_agent.VerifierAgent.run",
+                new_callable=AsyncMock,
+                return_value=verified_results,
+            ),
+            patch(
+                "api.agents.schema_mapper.SchemaMappingAgent.run",
+                new_callable=AsyncMock,
+                return_value={},
+            ),
+            patch(
+                "api.agents.hitl_router.HITLRouter.run", new_callable=AsyncMock, return_value=None
+            ),
             # Suppress the real emit_event to avoid needing a live SSE queue
             patch("api.agents.base.BaseAgent.emit_event", new_callable=AsyncMock),
         ):
@@ -174,12 +202,32 @@ class TestOrchestratorEventOrder:
         }
 
         with (
-            patch("api.agents.doc_intel_agent.DocIntelAgent.run", new_callable=AsyncMock, return_value={}),
-            patch("api.agents.vision_agent.VisionAgent.run", new_callable=AsyncMock, return_value={}),
-            patch("api.agents.retrieval_agent.RetrievalAgent.run", new_callable=AsyncMock, return_value={}),
-            patch("api.agents.verifier_agent.VerifierAgent.run", new_callable=AsyncMock, return_value=verified_results),
-            patch("api.agents.schema_mapper.SchemaMappingAgent.run", new_callable=AsyncMock, return_value={}),
-            patch("api.agents.hitl_router.HITLRouter.run", new_callable=AsyncMock, return_value=None),
+            patch(
+                "api.agents.doc_intel_agent.DocIntelAgent.run",
+                new_callable=AsyncMock,
+                return_value={},
+            ),
+            patch(
+                "api.agents.vision_agent.VisionAgent.run", new_callable=AsyncMock, return_value={}
+            ),
+            patch(
+                "api.agents.retrieval_agent.RetrievalAgent.run",
+                new_callable=AsyncMock,
+                return_value={},
+            ),
+            patch(
+                "api.agents.verifier_agent.VerifierAgent.run",
+                new_callable=AsyncMock,
+                return_value=verified_results,
+            ),
+            patch(
+                "api.agents.schema_mapper.SchemaMappingAgent.run",
+                new_callable=AsyncMock,
+                return_value={},
+            ),
+            patch(
+                "api.agents.hitl_router.HITLRouter.run", new_callable=AsyncMock, return_value=None
+            ),
             patch("api.agents.base.BaseAgent.emit_event", new_callable=AsyncMock),
         ):
             orchestrator = OrchestratorAgent()
@@ -193,9 +241,7 @@ class TestOrchestratorEventOrder:
             result = await db.execute(
                 select(Product)
                 .where(Product.id == product_id)
-                .options(
-                    selectinload(Product.fields)
-                )
+                .options(selectinload(Product.fields))
             )
             product_after = result.scalar_one_or_none()
 

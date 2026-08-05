@@ -158,6 +158,7 @@ class TestRetrievalAgentRun:
     @pytest.mark.asyncio
     async def test_candidate_source_type_is_web(self, monkeypatch):
         """Retrieval agent candidates must be tagged as WEB source type."""
+
         async def mock_emit(product_id, event_type, message, data=None):
             pass
 

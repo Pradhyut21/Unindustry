@@ -12,7 +12,19 @@
 > Confidence-scored, citation-traced product intelligence for industrial commerce —
 > every field is traceable to its exact source instead of silently hallucinated.
 
-> **Demo:** Upload `api/fixtures/sample_siemens_3rt2015_datasheet.pdf` locally to see the full pipeline — contradiction detection, SSE animation, and citation drawer — run in under 30s.
+---
+
+## ⚡ Judge TL;DR (30 seconds)
+
+| What | Result |
+|------|--------|
+| Run a real demo | `docker compose up` → open localhost:3000 → click **▶ Run live demo (no setup needed)** |
+| What's novel | `SOURCE_CONTRADICTION` — system shows BOTH conflicting values instead of silently picking one |
+| Benchmark Eval | **85.2%** accuracy on 27-field benchmark (`python -m scripts.eval`) |
+| Real-World Eval | **87.5%** accuracy on real manufacturer PDFs (`python -m scripts.eval_real`) |
+| Calibration | Confidence gap **+0.45** — model is measurably less certain when it's wrong |
+| HITL Loop | Human corrections write back as trusted sources, reducing future review load |
+| Tests | **82 passing** (13 skipped), CI green, Docker one-command stack |
 
 ---
 
@@ -22,8 +34,9 @@
 |---|---|
 | **Lines of code** | ~3,900 (2,400 Python src · 410 tests · 1,040 TypeScript) |
 | **Agents** | 7 (Orchestrator, Doc-Intel, Vision, Retrieval, Verifier, Schema Mapper, HITL Router) |
-| **Tests** | 82 passing — verifier scoring, schema mapping, API health, doc-intel parsing, vision agent skips, retrieval agent logic, HITL router events, orchestrator integration |
-| **Eval** | 85.2% accuracy on 27 labeled fields incl. 4 adversarial cases; +0.450 calibration gap |
+| **Tests** | 82 passing (13 DB tests skipped when local DB omitted) — full agent and API test suite |
+| **Eval Accuracy** | 85.2% benchmark accuracy (`scripts/eval.py`) · 87.5% real-world datasheet accuracy (`scripts/eval_real.py`) |
+| **Calibration** | +0.450 calibration gap — high confidence on correct fields, low on incorrect |
 | **LLM** | Groq `llama-3.3-70b-versatile` (extraction) · `llama-4-scout` (vision, where available) |
 | **Stack** | FastAPI · Next.js 14 · pgvector · SSE streaming · Docker |
 | **Key differentiator** | `SOURCE_CONTRADICTION` detection — wrong answer is flagged and shown both values, not silently picked |

@@ -64,9 +64,7 @@ class TestVisionAgentGracefulSkips:
         agent = VisionAgent()
         monkeypatch.setattr(agent, "emit_event", mock_emit)
 
-        result = await agent.run(
-            product_id=uuid.uuid4(), image_paths=["some_image.jpg"]
-        )
+        result = await agent.run(product_id=uuid.uuid4(), image_paths=["some_image.jpg"])
         assert result == {}
         assert any(e["type"] == "agent_error" for e in events)
 
@@ -87,9 +85,7 @@ class TestVisionAgentGracefulSkips:
         agent = VisionAgent()
         monkeypatch.setattr(agent, "emit_event", mock_emit)
 
-        result = await agent.run(
-            product_id=uuid.uuid4(), image_paths=["some_image.jpg"]
-        )
+        result = await agent.run(product_id=uuid.uuid4(), image_paths=["some_image.jpg"])
         assert result == {}
         assert any(e["type"] == "agent_complete" for e in events)
 
