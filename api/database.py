@@ -11,10 +11,17 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from api.models.db import Base
 
-DATABASE_URL = os.environ.get(
+raw_url = os.environ.get(
     "DATABASE_URL",
     "postgresql+asyncpg://producttruth:producttruth@localhost:5432/producttruth",
 )
+
+if raw_url.startswith("postgres://"):
+    raw_url = raw_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif raw_url.startswith("postgresql://") and "+asyncpg" not in raw_url:
+    raw_url = raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+DATABASE_URL = raw_url
 
 engine = create_async_engine(
     DATABASE_URL,
