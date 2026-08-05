@@ -124,7 +124,7 @@ export default function DashboardPage() {
         {/* ── STATS ROW ── */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.25rem", marginBottom: "2rem" }}>
           <div className="stat-item" style={{ background: "var(--white)", padding: "1.25rem" }}>
-            <div style={{ display: "flex", justifyBetween: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
                 <div className="stat-label">Total Analyzed</div>
                 <div className="stat-value" style={{ marginTop: "0.25rem" }}>{products.length}</div>
@@ -137,7 +137,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="stat-item" style={{ background: "var(--white)", padding: "1.25rem", borderTopColor: "#16A34A" }}>
-            <div style={{ display: "flex", justifyBetween: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
                 <div className="stat-label">Verified Complete</div>
                 <div className="stat-value" style={{ marginTop: "0.25rem", color: "#16A34A" }}>{completedCount}</div>
@@ -150,7 +150,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="stat-item" style={{ background: "var(--white)", padding: "1.25rem", borderTopColor: "var(--red)" }}>
-            <div style={{ display: "flex", justifyBetween: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
                 <div className="stat-label">Pending Human Review</div>
                 <div className="stat-value" style={{ marginTop: "0.25rem", color: "var(--red)" }}>{pendingReviewCount || reviewCount}</div>
@@ -163,7 +163,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="stat-item" style={{ background: "var(--white)", padding: "1.25rem", borderTopColor: "#2563EB" }}>
-            <div style={{ display: "flex", justifyBetween: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
                 <div className="stat-label">Field Accuracy</div>
                 <div className="stat-value" style={{ marginTop: "0.25rem", color: "#2563EB" }}>85.2%</div>
@@ -319,7 +319,7 @@ export default function DashboardPage() {
 
           {/* Table */}
           {loadingHistory ? (
-            <div style={{ padding: "3rem", textCenter: "center", color: "var(--neutral-400)", fontSize: "0.875rem" }}>
+            <div style={{ padding: "3rem", textAlign: "center", color: "var(--neutral-400)", fontSize: "0.875rem" }}>
               Loading stored products from database...
             </div>
           ) : filteredProducts.length === 0 ? (
